@@ -1,0 +1,14 @@
+CREATE TABLE ReactionResult (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp INTEGER NOT NULL,
+    reactionTimeMs INTEGER NOT NULL
+);
+
+insertResult:
+INSERT INTO ReactionResult(timestamp, reactionTimeMs)
+VALUES (?, ?);
+
+selectAllResults:
+SELECT *
+FROM ReactionResult
+ORDER BY timestamp DESC;
