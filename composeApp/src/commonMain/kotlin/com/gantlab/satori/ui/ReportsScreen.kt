@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import com.gantlab.satori.db.ReactionResult
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
+import satori.composeapp.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,10 +31,10 @@ fun ReportsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Twoje Wyniki") },
+                title = { Text(stringResource(Res.string.app_name)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Powrót")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 }
             )
@@ -40,25 +42,25 @@ fun ReportsScreen(
     ) { padding ->
         if (results.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("Brak zapisanych wyników. Wykonaj pierwszy test!", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(Res.string.no_results), style = MaterialTheme.typography.bodyLarge)
             }
         } else {
             Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
-                Text("Historia reakcji (ms)", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.history_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
 
                 if (results.size >= 2) {
-                    LineChart(results.reversed()) // Pokazujemy od najstarszego do najnowszego na wykresie
+                    LineChart(results.reversed())
                 } else {
                     Card(modifier = Modifier.fillMaxWidth().height(100.dp)) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Text("Zbierz więcej danych dla wykresu")
+                            Text(stringResource(Res.string.collect_more_data))
                         }
                     }
                 }
 
                 Spacer(Modifier.height(24.dp))
-                Text("Ostatnie próby", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.recent_attempts), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
 
                 LazyColumn {
@@ -86,20 +88,22 @@ fun ResultItem(result: ReactionResult) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(text = "Wynik: ${result.reactionTimeMs} ms", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "${stringResource(Res.string.result_label).replace("%d", result.reactionTimeMs.toString())}", style = MaterialTheme.typography.bodyLarge)
             Text(text = dateString, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
 
         val qualityColor = when {
-            result.reactionTimeMs < 250 -> Color(0xFF4CAF50) // Świetny
-            result.reactionTimeMs < 400 -> Color(0xFFFFC107) // Dobry
-            else -> Color(0xFFF44336) // Słaby
+            result.reactionTimeMs < 250 -> Color(0xFF4CAF50)
+            result.reactionTimeMs < 400 -> Color(0xFFFFC107)
+            else -> Color(0xFFF44336)
         }
 
         Surface(color = qualityColor, shape = MaterialTheme.shapes.small) {
             Box(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                 Text(
-                    text = if (result.reactionTimeMs < 250) "SZYBKO" else if (result.reactionTimeMs < 400) "OK" else "POWOLNIE",
+                    text = if (result.reactionTimeMs < 250) stringResource(Res.string.fast) 
+                           else if (result.reactionTimeMs < 400) stringResource(Res.string.ok) 
+                           else stringResource(Res.string.slow),
                     color = Color.White,
                     style = MaterialTheme.typography.labelSmall
                 )

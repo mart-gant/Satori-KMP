@@ -37,12 +37,23 @@ kotlin {
         }
         
         jvmMain.dependencies {
-            // Dodajemy sterownik JDBC dla SQLite
             implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
         }
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+        }
+
+        val androidUnitTest by getting {
+            dependencies {
+                implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
+            }
+        }
+
+        val jvmTest by getting {
+            dependencies {
+                implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
+            }
         }
     }
 }

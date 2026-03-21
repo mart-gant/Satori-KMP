@@ -2,7 +2,8 @@ package com.gantlab.satori.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +21,7 @@ fun ProfileScreen(
     onHighContrastChange: (Boolean) -> Unit,
     onLargeFontChange: (Boolean) -> Unit,
     onAnimationsChange: (Boolean) -> Unit,
+    onNavigateToAbout: () -> Unit,
     onBack: () -> Unit
 ) {
     Scaffold(
@@ -29,7 +31,7 @@ fun ProfileScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Powrót"
                         )
                     }
@@ -71,6 +73,21 @@ fun ProfileScreen(
                 Text("Animacje włączone")
                 Spacer(Modifier.weight(1f))
                 Switch(checked = animationsEnabled, onCheckedChange = onAnimationsChange)
+            }
+
+            Spacer(Modifier.weight(1f))
+
+            Button(
+                onClick = onNavigateToAbout,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            ) {
+                Icon(Icons.Default.Info, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("O aplikacji i licencje")
             }
         }
     }

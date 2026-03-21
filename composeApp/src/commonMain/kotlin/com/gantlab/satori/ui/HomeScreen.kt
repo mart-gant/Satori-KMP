@@ -12,7 +12,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gantlab.satori.AppViewModel
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import satori.composeapp.generated.resources.*
 
 @Composable
 fun HomeScreen(
@@ -33,14 +35,14 @@ fun HomeScreen(
         Spacer(Modifier.height(48.dp))
         
         Text(
-            text = "Satori",
+            text = stringResource(Res.string.app_name),
             style = MaterialTheme.typography.displayMedium,
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold
         )
         
         Text(
-            text = "Witaj, ${uiState.nickname.ifEmpty { "Wojowniku" }}!",
+            text = stringResource(Res.string.welcome_warrior).replace("%s", uiState.nickname.ifEmpty { stringResource(Res.string.warrior_default) }),
             style = MaterialTheme.typography.headlineSmall
         )
 
@@ -57,7 +59,7 @@ fun HomeScreen(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Twoja Ranga", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(Res.string.your_rank), style = MaterialTheme.typography.labelLarge)
                 Text(
                     text = uiState.rank,
                     style = MaterialTheme.typography.headlineMedium,
@@ -75,13 +77,13 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             StatCard(
-                label = "Najlepszy",
-                value = uiState.bestResult?.let { "$it ms" } ?: "--",
+                label = stringResource(Res.string.best_result),
+                value = uiState.bestResult?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
                 modifier = Modifier.weight(1f)
             )
             StatCard(
-                label = "Średnia",
-                value = uiState.averageResult?.let { "$it ms" } ?: "--",
+                label = stringResource(Res.string.average_result),
+                value = uiState.averageResult?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
                 modifier = Modifier.weight(1f)
             )
         }
@@ -93,7 +95,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = MaterialTheme.shapes.medium
         ) {
-            Text("ROZPOCZNIJ TEST", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(Res.string.start_test), fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
         Spacer(Modifier.height(12.dp))
@@ -106,13 +108,13 @@ fun HomeScreen(
                 onClick = onNavigateToReports,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Raporty")
+                Text(stringResource(Res.string.reports))
             }
             OutlinedButton(
                 onClick = onNavigateToProfile,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Profil")
+                Text(stringResource(Res.string.profile))
             }
         }
         
