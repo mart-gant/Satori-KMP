@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Satori</string>
+    <string name="welcome_warrior">Witaj, %s!</string>
+    <string name="warrior_default">Wojowniku</string>
+    <string name="your_rank">Twoja Ranga</string>
+    <string name="best_result">Najlepszy</string>
+    <string name="average_result">Średnia</string>
+    <string name="start_test">ROZPOCZNIJ TEST</string>
+    <string name="reports">Raporty</string>
+    <string name="profile">Profil</string>
+    <string name="back">Powrót</string>
+    <string name="ms">%d ms</string>
+    <string name="no_results">Brak zapisanych wyników. Wykonaj pierwszy test!</string>
+    <string name="history_title">Historia reakcji (ms)</string>
+    <string name="recent_attempts">Ostatnie próby</string>
+    <string name="collect_more_data">Zbierz więcej danych dla wykresu</string>
+    <string name="result_label">Wynik: %d ms</string>
+    <string name="fast">SZYBKO</string>
+    <string name="ok">OK</string>
+    <string name="slow">POWOLNIE</string>
+    <string name="nickname">Pseudonim</string>
+    <string name="accessibility">Dostępność</string>
+    <string name="high_contrast">Tryb wysokiego kontrastu</string>
+    <string name="large_font">Większa czcionka</string>
+    <string name="animations_enabled">Animacje włączone</string>
+</resources>

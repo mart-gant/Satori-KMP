@@ -6,4 +6,5 @@ object Routes {
     const val PROFILE = "profile"
     const val REACTION_TEST = "reaction_test"
     const val REPORTS = "reports"
+    const val ABOUT = "about"
 }

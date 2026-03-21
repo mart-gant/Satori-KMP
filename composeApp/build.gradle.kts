@@ -31,14 +31,6 @@ kotlin {
         binaries.executable()
     }
     
-    // wasmJs został wyłączony, ponieważ moduł :shared używa SQLDelight 2.0.2, 
-    // który nie wspiera tej platformy.
-    // @OptIn(ExperimentalWasmDsl::class)
-    // wasmJs {
-    //     browser()
-    //     binaries.executable()
-    // }
-    
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
@@ -62,7 +54,8 @@ kotlin {
             // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
-
+            implementation(libs.koin.compose.viewmodel)
+            
             implementation(project(":shared"))
         }
         commonTest.dependencies {
@@ -89,7 +82,12 @@ android {
     }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {

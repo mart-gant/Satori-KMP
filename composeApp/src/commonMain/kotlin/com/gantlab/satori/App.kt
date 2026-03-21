@@ -64,12 +64,18 @@ fun App() {
                     onHighContrastChange = viewModel::toggleHighContrast,
                     onLargeFontChange = viewModel::toggleLargeFont,
                     onAnimationsChange = viewModel::toggleAnimations,
+                    onNavigateToAbout = { navController.navigate(Routes.ABOUT) },
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.REPORTS) {
                 ReportsScreen(
                     results = uiState.results,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.ABOUT) {
+                AboutScreen(
                     onBack = { navController.popBackStack() }
                 )
             }
