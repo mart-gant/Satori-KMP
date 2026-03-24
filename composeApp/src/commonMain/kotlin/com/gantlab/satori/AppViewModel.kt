@@ -10,7 +10,8 @@ import com.gantlab.satori.db.ReactionResult
 
 class AppViewModel(
     private val repository: SatoriRepository,
-    private val settings: SettingsManager
+    private val settings: SettingsManager,
+    private val analytics: Analytics
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppState())
@@ -27,16 +28,19 @@ class AppViewModel(
             )
         }
         loadResults()
+        analytics.logEvent(AnalyticsEvents.SCREEN_VIEW, mapOf("screen" to "home"))
     }
 
     fun completeOnboarding() {
         settings.isOnboardingCompleted = true
         _uiState.update { it.copy(isOnboardingCompleted = true) }
+        analytics.logEvent("onboarding_completed")
     }
 
     fun saveReactionTime(timeMs: Long) {
         repository.insertReactionResult(timeMs)
         loadResults()
+        analytics.logEvent(AnalyticsEvents.TEST_FINISHED, mapOf("result_ms" to timeMs.toString()))
     }
 
     fun loadResults() {
@@ -83,6 +87,10 @@ class AppViewModel(
     fun toggleAnimations(enabled: Boolean) {
         settings.animationsEnabled = enabled
         _uiState.update { it.copy(animationsEnabled = enabled) }
+    }
+
+    fun logShareClick() {
+        analytics.logEvent(AnalyticsEvents.SHARE_CLICKED)
     }
 }
 

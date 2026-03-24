@@ -3,8 +3,8 @@ package com.gantlab.satori.di
 import com.gantlab.satori.AppViewModel
 import com.gantlab.satori.db.SatoriRepository
 import com.gantlab.satori.settings.SettingsManager
+import com.gantlab.satori.getAnalytics
 import org.koin.core.context.startKoin
-import org.koin.core.module.Module
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
@@ -20,5 +20,6 @@ fun initKoin() = initKoin {}
 val commonModule = module {
     single { SettingsManager() }
     single { SatoriRepository(get()) }
-    factory { AppViewModel(get(), get()) }
+    single { getAnalytics() }
+    factory { AppViewModel(get(), get(), get()) }
 }
