@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import com.gantlab.satori.db.ReactionResult
 import com.gantlab.satori.db.Routine
-import com.gantlab.satori.db.RoutineTask
 import com.gantlab.satori.db.MoodEntry
 import com.gantlab.satori.db.SocialScenario
 import com.gantlab.satori.db.SelfAssessmentResult
@@ -16,7 +15,7 @@ import com.gantlab.satori.db.SelfAssessmentResult
 class AppViewModel(
     private val repository: SatoriRepository,
     private val settings: SettingsManager,
-    private val analytics: Analytics
+    private val analytics: Analytics,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppState())
@@ -29,7 +28,7 @@ class AppViewModel(
                 nickname = settings.nickname,
                 highContrast = settings.highContrast,
                 largeFont = settings.largeFont,
-                animationsEnabled = settings.animationsEnabled
+                animationsEnabled = settings.animationsEnabled,
             )
         }
         loadResults()
@@ -56,14 +55,14 @@ class AppViewModel(
     fun loadResults() {
         val results = repository.getAllResults()
         val best = if (results.isNotEmpty()) results.minOf { it.reactionTimeMs } else null
-        val avg = if (results.isNotEmpty()) results.map { it.reactionTimeMs }.average().toLong() else null
+        val avg = if (results.isNotEmpty()) results.asSequence().map { it.reactionTimeMs }.average().toLong() else null
         
         _uiState.update { 
             it.copy(
                 results = results,
                 bestResult = best,
                 averageResult = avg,
-                rank = calculateRank(best)
+                rank = calculateRank(best),
             ) 
         }
     }
@@ -97,10 +96,6 @@ class AppViewModel(
     fun toggleAnimations(enabled: Boolean) {
         settings.animationsEnabled = enabled
         _uiState.update { it.copy(animationsEnabled = enabled) }
-    }
-
-    fun logShareClick() {
-        analytics.logEvent(AnalyticsEvents.SHARE_CLICKED)
     }
 
     // --- Routines Logic ---
@@ -208,11 +203,11 @@ class AppViewModel(
         
         val recs = mutableListOf<Recommendation>()
         
-        if (latestMood != null && latestMood.moodScore < 3) {
+        if ((latestMood != null) && (latestMood.moodScore < 3)) {
             recs.add(Recommendation("Zadbaj o siebie", "Twoja ocena nastroju jest niska. Spróbuj ćwiczeń oddechowych z sekcji Porady.", "Zdrowie Psychiczne"))
         }
         
-        if (latestAssessment != null && latestAssessment.attentionScore < 3) {
+        if ((latestAssessment != null) && (latestAssessment.attentionScore < 3)) {
             recs.add(Recommendation("Trening uważności", "Skupienie może być dziś wyzwaniem. Spróbuj gry Color Clash, aby poćwiczyć uwagę.", "Poznawcze"))
         }
 
