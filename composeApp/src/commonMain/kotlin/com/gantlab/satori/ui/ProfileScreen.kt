@@ -22,6 +22,7 @@ fun ProfileScreen(
     onLargeFontChange: (Boolean) -> Unit,
     onAnimationsChange: (Boolean) -> Unit,
     onNavigateToAbout: () -> Unit,
+    onExportData: () -> Unit,
     onBack: () -> Unit
 ) {
     Scaffold(
@@ -76,6 +77,15 @@ fun ProfileScreen(
             }
 
             Spacer(Modifier.weight(1f))
+
+            OutlinedButton(
+                onClick = onExportData,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Eksportuj dane do CSV")
+            }
+
+            Spacer(Modifier.height(8.dp))
 
             Button(
                 onClick = onNavigateToAbout,

@@ -7,6 +7,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import com.gantlab.satori.db.ReactionResult
+import com.gantlab.satori.db.Routine
+import com.gantlab.satori.db.RoutineTask
+import com.gantlab.satori.db.MoodEntry
+import com.gantlab.satori.db.SocialScenario
+import com.gantlab.satori.db.SelfAssessmentResult
 
 class AppViewModel(
     private val repository: SatoriRepository,
@@ -28,6 +33,11 @@ class AppViewModel(
             )
         }
         loadResults()
+        loadRoutines()
+        loadMoodHistory()
+        loadScenarios()
+        loadSelfAssessmentHistory()
+        updateRecommendations()
         analytics.logEvent(AnalyticsEvents.SCREEN_VIEW, mapOf("screen" to "home"))
     }
 
@@ -92,6 +102,132 @@ class AppViewModel(
     fun logShareClick() {
         analytics.logEvent(AnalyticsEvents.SHARE_CLICKED)
     }
+
+    // --- Routines Logic ---
+
+    fun loadRoutines() {
+        val routines = repository.getAllRoutines()
+        _uiState.update { it.copy(routines = routines) }
+    }
+
+    fun addRoutine(title: String) {
+        repository.createRoutine(title)
+        loadRoutines()
+    }
+
+    fun deleteRoutine(id: Long) {
+        repository.deleteRoutine(id)
+        loadRoutines()
+    }
+
+    // --- Mood Logic ---
+
+    fun loadMoodHistory() {
+        val history = repository.getMoodHistory()
+        _uiState.update { it.copy(moodHistory = history) }
+    }
+
+    fun saveMood(mood: Long, energy: Long, note: String) {
+        repository.insertMood(mood, energy, note)
+        loadMoodHistory()
+        updateRecommendations()
+        analytics.logEvent("mood_logged", mapOf("mood" to mood.toString(), "energy" to energy.toString()))
+    }
+
+    // --- Mind Challenges ---
+
+    fun saveChallengeResult(type: String, score: Long) {
+        repository.insertChallengeResult(type, score)
+        analytics.logEvent("challenge_finished", mapOf("type" to type, "score" to score.toString()))
+    }
+
+    // --- Social Scenarios Logic ---
+
+    fun loadScenarios() {
+        val scenarios = repository.getAllScenarios()
+        if (scenarios.isEmpty()) {
+            // Dodajmy przykładowe scenariusze, jeśli baza jest pusta
+            repository.insertScenario(
+                "Wizyta u lekarza", 
+                "Co zrobić po wejściu do przychodni.",
+                "1. Podejdź do rejestracji\n2. Podaj swoje imię i nazwisko\n3. Usiądź w poczekalni i czekaj na wywołanie\n4. Wejdź do gabinetu, gdy lekarz Cię poprosi",
+                "Zdrowie"
+            )
+            repository.insertScenario(
+                "Zakupy w sklepie", 
+                "Jak sprawnie zrobić zakupy.",
+                "1. Przygotuj listę produktów\n2. Weź koszyk przy wejściu\n3. Znajdź produkty z listy\n4. Podejdź do kasy i zapłać",
+                "Codzienność"
+            )
+            repository.insertScenario(
+                "Rozmowa telefoniczna",
+                "Jak przygotować się i przeprowadzić rozmowę.",
+                "1. Zapisz na kartce główny cel rozmowy\n2. Wybierz numer i poczekaj na odebranie\n3. Przywitaj się: 'Dzień dobry, mówi [Twoje Imię]'\n4. Powiedz, w jakiej sprawie dzwonisz\n5. Słuchaj odpowiedzi i ewentualnie zapisuj ważne informacje\n6. Na koniec powiedz 'Dziękuję, do widzenia' i rozłącz się",
+                "Komunikacja"
+            )
+            repository.insertScenario(
+                "Jazda autobusem",
+                "Korzystanie z komunikacji miejskiej krok po kroku.",
+                "1. Sprawdź numer autobusu i godzinę na rozkładzie\n2. Stań na przystanku i czekaj na nadjeżdżający pojazd\n3. Upewnij się, że to Twój numer i wejdź do środka\n4. Skasuj bilet lub przyłóż kartę do czytnika\n5. Znajdź wolne miejsce siedzące lub złap się stabilnie uchwytu\n6. Obserwuj tablicę z przystankami lub słuchaj komunikatów\n7. Przed Twoim przystankiem naciśnij przycisk 'Stop' i wysiądź",
+                "Podróż"
+            )
+            _uiState.update { it.copy(scenarios = repository.getAllScenarios()) }
+        } else {
+            _uiState.update { it.copy(scenarios = scenarios) }
+        }
+    }
+
+    // --- Overstimulation Tips ---
+    
+    fun getOverstimulationTips() = listOf(
+        Tip("Głębokie oddychanie", "Zamknij oczy i weź 5 głębokich oddechów, skupiając się tylko na powietrzu.", "🧘"),
+        Tip("Redukcja światła", "Przyciemnij ekran telefonu lub wyjdź do ciemniejszego pomieszczenia na 5 minut.", "💡"),
+        Tip("Biały szum", "Włącz dźwięk deszczu lub biały szum, aby odciąć się od nagłych dźwięków otoczenia.", "🎧"),
+        Tip("Zasada 20-20-20", "Co 20 minut spójrz na obiekt oddalony o 20 stóp (6m) przez 20 sekund.", "👀"),
+        Tip("Zimna woda", "Przemyj nadgarstki lub twarz zimną wodą, aby pobudzić układ przywspółczulny.", "💧")
+    )
+
+    // --- Self-Assessment ---
+
+    fun loadSelfAssessmentHistory() {
+        val history = repository.getSelfAssessmentHistory()
+        _uiState.update { it.copy(selfAssessmentHistory = history) }
+    }
+
+    fun saveSelfAssessment(attention: Long, memory: Long, executive: Long) {
+        repository.insertSelfAssessment(attention, memory, executive)
+        loadSelfAssessmentHistory()
+        updateRecommendations()
+    }
+
+    // --- Recommendations ---
+
+    fun updateRecommendations() {
+        val latestMood = _uiState.value.moodHistory.firstOrNull()
+        val latestAssessment = _uiState.value.selfAssessmentHistory.firstOrNull()
+        
+        val recs = mutableListOf<Recommendation>()
+        
+        if (latestMood != null && latestMood.moodScore < 3) {
+            recs.add(Recommendation("Zadbaj o siebie", "Twoja ocena nastroju jest niska. Spróbuj ćwiczeń oddechowych z sekcji Porady.", "Zdrowie Psychiczne"))
+        }
+        
+        if (latestAssessment != null && latestAssessment.attentionScore < 3) {
+            recs.add(Recommendation("Trening uważności", "Skupienie może być dziś wyzwaniem. Spróbuj gry Color Clash, aby poćwiczyć uwagę.", "Poznawcze"))
+        }
+
+        if (recs.isEmpty()) {
+            recs.add(Recommendation("Dobra forma!", "Kontynuuj swoje codzienne rutyny, aby utrzymać ten stan.", "Ogólne"))
+        }
+
+        _uiState.update { it.copy(recommendations = recs) }
+    }
+
+    // --- Export ---
+
+    fun getExportData(): String {
+        return repository.exportMoodToCsv()
+    }
 }
 
 data class AppState(
@@ -101,7 +237,16 @@ data class AppState(
     val largeFont: Boolean = false,
     val animationsEnabled: Boolean = true,
     val results: List<ReactionResult> = emptyList(),
+    val routines: List<Routine> = emptyList(),
+    val moodHistory: List<MoodEntry> = emptyList(),
+    val scenarios: List<SocialScenario> = emptyList(),
+    val selfAssessmentHistory: List<SelfAssessmentResult> = emptyList(),
+    val recommendations: List<Recommendation> = emptyList(),
     val bestResult: Long? = null,
     val averageResult: Long? = null,
     val rank: String = "Nowicjusz"
 )
+
+data class Tip(val title: String, val description: String, val icon: String)
+data class Recommendation(val title: String, val description: String, val type: String)
+

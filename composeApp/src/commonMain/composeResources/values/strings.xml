@@ -23,4 +23,6 @@
     <string name="high_contrast">Tryb wysokiego kontrastu</string>
     <string name="large_font">Większa czcionka</string>
     <string name="animations_enabled">Animacje włączone</string>
+    <string name="share_rank">Udostępnij</string>
+    <string name="share_text">Mój najlepszy czas reakcji w Satori to %d ms! Moja ranga: %s. Sprawdź swój refleks!</string>
 </resources>

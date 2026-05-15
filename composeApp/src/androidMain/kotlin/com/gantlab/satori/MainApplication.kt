@@ -9,6 +9,7 @@ import org.koin.dsl.module
 class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        appContext = this
         initKoin {
             androidContext(this@MainApplication)
             modules(module {

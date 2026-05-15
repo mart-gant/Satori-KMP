@@ -26,6 +26,7 @@ import satori.composeapp.generated.resources.*
 @Composable
 fun ReportsScreen(
     results: List<ReactionResult>,
+    moodHistory: List<com.gantlab.satori.db.MoodEntry> = emptyList(),
     onBack: () -> Unit
 ) {
     Scaffold(
@@ -40,17 +41,13 @@ fun ReportsScreen(
             )
         }
     ) { padding ->
-        if (results.isEmpty()) {
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text(stringResource(Res.string.no_results), style = MaterialTheme.typography.bodyLarge)
-            }
-        } else {
-            Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
-                Text(stringResource(Res.string.history_title), style = MaterialTheme.typography.titleMedium)
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+            item {
+                Text("Historia Reakcji", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
 
                 if (results.size >= 2) {
-                    LineChart(results.reversed())
+                    LineChart(results.map { it.reactionTimeMs }.reversed().toList())
                 } else {
                     Card(modifier = Modifier.fillMaxWidth().height(100.dp)) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
@@ -58,17 +55,33 @@ fun ReportsScreen(
                         }
                     }
                 }
-
                 Spacer(Modifier.height(24.dp))
-                Text(stringResource(Res.string.recent_attempts), style = MaterialTheme.typography.titleMedium)
+            }
+
+            item {
+                Text("Historia Nastroju", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
 
-                LazyColumn {
-                    items(results) { result ->
-                        ResultItem(result)
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                if (moodHistory.size >= 2) {
+                    LineChart(moodHistory.map { it.moodScore }.reversed().toList(), color = Color(0xFF9C27B0), maxValue = 5f)
+                } else {
+                    Card(modifier = Modifier.fillMaxWidth().height(100.dp)) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Text("Zbyt mało danych nastroju.")
+                        }
                     }
                 }
+                Spacer(Modifier.height(24.dp))
+            }
+
+            item {
+                Text(stringResource(Res.string.recent_attempts), style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
+            }
+
+            items(results) { result ->
+                ResultItem(result)
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             }
         }
     }
@@ -113,19 +126,23 @@ fun ResultItem(result: ReactionResult) {
 }
 
 @Composable
-private fun LineChart(results: List<ReactionResult>) {
-    val color = MaterialTheme.colorScheme.primary
-    val minTime = results.minOf { it.reactionTimeMs }.toFloat()
-    val maxTime = results.maxOf { it.reactionTimeMs }.toFloat()
-    val timeRange = (maxTime - minTime).coerceAtLeast(1f)
+private fun LineChart(
+    values: List<Long>,
+    color: Color = MaterialTheme.colorScheme.primary,
+    maxValue: Float? = null
+) {
+    val minVal = 0f
+    val maxVal = maxValue ?: values.maxOf { it }.toFloat()
+    val range = (maxVal - minVal).coerceAtLeast(1f)
 
     Canvas(modifier = Modifier.fillMaxWidth().height(150.dp)) {
         val (width, height) = size
         val path = Path()
 
-        results.forEachIndexed { i, result ->
-            val x = if (results.size > 1) i * (width / (results.size - 1)) else width / 2
-            val y = height - ((result.reactionTimeMs - minTime) / timeRange) * height
+        values.forEachIndexed { i, valLong ->
+            val value = valLong.toFloat()
+            val x = if (values.size > 1) i * (width / (values.size - 1)) else width / 2
+            val y = height - ((value - minVal) / range) * height
 
             if (i == 0) {
                 path.moveTo(x, y)

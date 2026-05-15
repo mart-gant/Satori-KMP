@@ -4,5 +4,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 
 actual fun createTestDriver(): SqlDriver {
-    return JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+    val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+    SatoriDatabase.Schema.create(driver)
+    return driver
 }

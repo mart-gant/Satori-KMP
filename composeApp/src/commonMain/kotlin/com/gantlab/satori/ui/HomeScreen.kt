@@ -1,6 +1,8 @@
 package com.gantlab.satori.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
@@ -22,7 +24,14 @@ import satori.composeapp.generated.resources.*
 fun HomeScreen(
     onNavigateToTest: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToReports: () -> Unit
+    onNavigateToReports: () -> Unit,
+    onNavigateToRoutines: () -> Unit,
+    onNavigateToMood: () -> Unit,
+    onNavigateToTips: () -> Unit,
+    onNavigateToScenarios: () -> Unit,
+    onNavigateToSelfAssessment: () -> Unit,
+    onNavigateToColorClash: () -> Unit,
+    onNavigateToMemoryGame: () -> Unit
 ) {
     val viewModel: AppViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
@@ -30,25 +39,45 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Spacer(Modifier.height(48.dp))
+        Spacer(Modifier.height(32.dp))
         
         Text(
             text = stringResource(Res.string.app_name),
-            style = MaterialTheme.typography.displayMedium,
+            style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold
         )
         
         Text(
-            text = stringResource(Res.string.welcome_warrior).replace("%s", uiState.nickname.ifEmpty { stringResource(Res.string.warrior_default) }),
+            text = "Witaj, ${uiState.nickname.ifEmpty { "użytkowniku" }}",
             style = MaterialTheme.typography.headlineSmall
         )
 
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(24.dp))
+
+        // REKOMENDACJE
+        if (uiState.recommendations.isNotEmpty()) {
+            Text("Dla Ciebie", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
+            Spacer(Modifier.height(8.dp))
+            uiState.recommendations.forEach { rec ->
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+                ) {
+                    Column(Modifier.padding(12.dp)) {
+                        Text(rec.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Text(rec.description, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
 
         // KARTA RANGI
         Card(
@@ -105,14 +134,29 @@ fun HomeScreen(
             )
         }
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(24.dp))
 
-        Button(
-            onClick = onNavigateToTest,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            shape = MaterialTheme.shapes.medium
+        // CORE FEATURES
+        Text("Codzienność", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
+        Spacer(Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(stringResource(Res.string.start_test), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            OutlinedButton(
+                onClick = onNavigateToRoutines,
+                modifier = Modifier.weight(1f),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Rutyny")
+            }
+            OutlinedButton(
+                onClick = onNavigateToMood,
+                modifier = Modifier.weight(1f),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Nastrój")
+            }
         }
 
         Spacer(Modifier.height(12.dp))
@@ -122,15 +166,77 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             OutlinedButton(
-                onClick = onNavigateToReports,
-                modifier = Modifier.weight(1f)
+                onClick = onNavigateToSelfAssessment,
+                modifier = Modifier.weight(1f),
+                shape = MaterialTheme.shapes.medium
             ) {
-                Text(stringResource(Res.string.reports))
+                Text("Samoocena")
             }
             OutlinedButton(
-                onClick = onNavigateToProfile,
-                modifier = Modifier.weight(1f)
+                onClick = onNavigateToScenarios,
+                modifier = Modifier.weight(1f),
+                shape = MaterialTheme.shapes.medium
             ) {
+                Text("Scenariusze")
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        // MIND CHALLENGES
+        Text("Wyzwania Umysłu", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
+        Spacer(Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Button(
+                onClick = onNavigateToTest,
+                modifier = Modifier.weight(1f),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Reakcja")
+            }
+            Button(
+                onClick = onNavigateToColorClash,
+                modifier = Modifier.weight(1f),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Color Clash")
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        Button(
+            onClick = onNavigateToMemoryGame,
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Text("Gra Pamięciowa")
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        OutlinedButton(
+            onClick = onNavigateToTips,
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+        ) {
+            Text("🆘 SOS: Przebodźcowanie")
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            TextButton(onClick = onNavigateToReports, modifier = Modifier.weight(1f)) {
+                Text(stringResource(Res.string.reports))
+            }
+            TextButton(onClick = onNavigateToProfile, modifier = Modifier.weight(1f)) {
                 Text(stringResource(Res.string.profile))
             }
         }

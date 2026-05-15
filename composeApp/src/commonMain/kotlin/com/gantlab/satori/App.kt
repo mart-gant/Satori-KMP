@@ -43,7 +43,14 @@ fun App() {
                 HomeScreen(
                     onNavigateToTest = { navController.navigate(Routes.REACTION_TEST) },
                     onNavigateToProfile = { navController.navigate(Routes.PROFILE) },
-                    onNavigateToReports = { navController.navigate(Routes.REPORTS) }
+                    onNavigateToReports = { navController.navigate(Routes.REPORTS) },
+                    onNavigateToRoutines = { navController.navigate(Routes.ROUTINES) },
+                    onNavigateToMood = { navController.navigate(Routes.MOOD_LOG) },
+                    onNavigateToTips = { navController.navigate(Routes.TIPS) },
+                    onNavigateToScenarios = { navController.navigate(Routes.SCENARIOS) },
+                    onNavigateToSelfAssessment = { navController.navigate(Routes.SELF_ASSESSMENT) },
+                    onNavigateToColorClash = { navController.navigate(Routes.COLOR_CLASH) },
+                    onNavigateToMemoryGame = { navController.navigate(Routes.MEMORY_GAME) }
                 )
             }
             composable(Routes.REACTION_TEST) {
@@ -51,6 +58,55 @@ fun App() {
                     onResult = { result ->
                         viewModel.saveReactionTime(result)
                     },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.COLOR_CLASH) {
+                ColorClashScreen(
+                    onResult = { score ->
+                        viewModel.saveChallengeResult("color_clash", score)
+                    },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.MEMORY_GAME) {
+                MemoryGameScreen(
+                    onResult = { score ->
+                        viewModel.saveChallengeResult("memory_game", score)
+                    },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.SELF_ASSESSMENT) {
+                SelfAssessmentScreen(
+                    onSave = viewModel::saveSelfAssessment,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.ROUTINES) {
+                RoutineScreen(
+                    routines = uiState.routines,
+                    onAddRoutine = viewModel::addRoutine,
+                    onDeleteRoutine = viewModel::deleteRoutine,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.MOOD_LOG) {
+                MoodLoggingScreen(
+                    history = uiState.moodHistory,
+                    onSaveMood = viewModel::saveMood,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.TIPS) {
+                OverstimulationTipsScreen(
+                    tips = viewModel.getOverstimulationTips(),
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.SCENARIOS) {
+                SocialScenariosScreen(
+                    scenarios = uiState.scenarios,
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -65,12 +121,17 @@ fun App() {
                     onLargeFontChange = viewModel::toggleLargeFont,
                     onAnimationsChange = viewModel::toggleAnimations,
                     onNavigateToAbout = { navController.navigate(Routes.ABOUT) },
+                    onExportData = {
+                        val csvData = viewModel.getExportData()
+                        getPlatform().shareText(csvData) // Or use a more specific file sharing if available
+                    },
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.REPORTS) {
                 ReportsScreen(
                     results = uiState.results,
+                    moodHistory = uiState.moodHistory,
                     onBack = { navController.popBackStack() }
                 )
             }

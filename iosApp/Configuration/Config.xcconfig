@@ -5,3 +5,6 @@ PRODUCT_BUNDLE_IDENTIFIER=com.gantlab.satori.Satori$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0
+// Link system SQLite on iOS to resolve _sqlite3_* undefined symbols
+OTHER_LDFLAGS = $(inherited) -lsqlite3
+

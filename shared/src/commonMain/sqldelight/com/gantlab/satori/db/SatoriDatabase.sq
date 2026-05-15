@@ -4,6 +4,46 @@ CREATE TABLE ReactionResult (
     reactionTimeMs INTEGER NOT NULL
 );
 
+CREATE TABLE MoodEntry (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp INTEGER NOT NULL,
+    moodScore INTEGER NOT NULL, -- 1-5
+    energyScore INTEGER NOT NULL, -- 1-5
+    note TEXT
+);
+
+CREATE TABLE ChallengeResult (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp INTEGER NOT NULL,
+    challengeType TEXT NOT NULL, -- 'color_clash', 'memory', etc.
+    score INTEGER NOT NULL
+);
+
+CREATE TABLE Routine (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    icon TEXT,
+    isActive INTEGER NOT NULL DEFAULT 1 -- 0=false, 1=true
+);
+
+CREATE TABLE RoutineTask (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    routineId INTEGER NOT NULL,
+    taskName TEXT NOT NULL,
+    scheduledTime TEXT, -- e.g. "08:30"
+    isCompletedToday INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY(routineId) REFERENCES Routine(id) ON DELETE CASCADE
+);
+
+CREATE TABLE SocialScenario (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    steps TEXT NOT NULL, -- Zapiszemy kroki jako tekst rozdzielony liniami
+    category TEXT NOT NULL -- np. 'Public', 'Work', 'Health'
+);
+
+-- Queries for ReactionResult
 insertResult:
 INSERT INTO ReactionResult(timestamp, reactionTimeMs)
 VALUES (?, ?);
@@ -11,4 +51,62 @@ VALUES (?, ?);
 selectAllResults:
 SELECT *
 FROM ReactionResult
-ORDER BY timestamp DESC;
+ORDER BY timestamp DESC, id DESC;
+
+-- Queries for MoodEntry
+insertMood:
+INSERT INTO MoodEntry(timestamp, moodScore, energyScore, note)
+VALUES (?, ?, ?, ?);
+
+getMoodHistory:
+SELECT * FROM MoodEntry ORDER BY timestamp DESC;
+
+-- Queries for ChallengeResult
+insertChallengeResult:
+INSERT INTO ChallengeResult(timestamp, challengeType, score)
+VALUES (?, ?, ?);
+
+getChallengeHistory:
+SELECT * FROM ChallengeResult WHERE challengeType = ? ORDER BY timestamp DESC;
+
+-- Queries for Routines
+insertRoutine:
+INSERT INTO Routine(title, icon, isActive)
+VALUES (?, ?, ?);
+
+getAllRoutines:
+SELECT * FROM Routine;
+
+insertRoutineTask:
+INSERT INTO RoutineTask(routineId, taskName, scheduledTime)
+VALUES (?, ?, ?);
+
+getTasksForRoutine:
+SELECT * FROM RoutineTask WHERE routineId = ?;
+
+deleteRoutine:
+DELETE FROM Routine WHERE id = ?;
+
+-- Queries for Social Scenarios
+getAllScenarios:
+SELECT * FROM SocialScenario;
+
+insertScenario:
+INSERT INTO SocialScenario(title, description, steps, category)
+VALUES (?, ?, ?, ?);
+
+-- Self-Assessment
+CREATE TABLE SelfAssessmentResult (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp INTEGER NOT NULL,
+    attentionScore INTEGER NOT NULL,
+    memoryScore INTEGER NOT NULL,
+    executiveScore INTEGER NOT NULL
+);
+
+insertSelfAssessment:
+INSERT INTO SelfAssessmentResult(timestamp, attentionScore, memoryScore, executiveScore)
+VALUES (?, ?, ?, ?);
+
+getSelfAssessmentHistory:
+SELECT * FROM SelfAssessmentResult ORDER BY timestamp DESC;

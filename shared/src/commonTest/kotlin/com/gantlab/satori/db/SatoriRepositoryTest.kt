@@ -13,14 +13,6 @@ class SatoriRepositoryTest {
     @Test
     fun testInsertingAndRetrievingResults() {
         val driver = createTestDriver()
-        
-        // Ensure schema is created for the in-memory driver
-        try {
-            SatoriDatabase.Schema.create(driver)
-        } catch (e: Exception) {
-            // Schema might already exist in some environments
-        }
-
         val database = SatoriDatabase(driver)
         val repository = SatoriRepository(database)
 

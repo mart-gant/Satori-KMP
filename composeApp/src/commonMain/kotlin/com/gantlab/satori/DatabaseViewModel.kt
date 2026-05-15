@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateListOf
 import com.gantlab.satori.db.DriverFactory
 import com.gantlab.satori.db.ReactionResult
 import com.gantlab.satori.db.createDatabase
+import com.gantlab.satori.utils.TimeUtils
 
 class DatabaseViewModel(driverFactory: DriverFactory) {
     private val database = createDatabase(driverFactory)
@@ -22,7 +23,7 @@ class DatabaseViewModel(driverFactory: DriverFactory) {
 
     fun addFakeResult() {
         queries.insertResult(
-            timestamp = kotlinx.datetime.Clock.System.now().toEpochMilliseconds(),
+            timestamp = TimeUtils.nowMs(),
             reactionTimeMs = (100..500).random().toLong()
         )
         refresh()
