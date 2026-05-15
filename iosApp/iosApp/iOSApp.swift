@@ -12,6 +12,11 @@ struct iOSApp: App {
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToSOS"))) { _ in
                     self.initialRoute = "tips"
                 }
+                .onOpenURL { url in
+                    if url.scheme == "satori" && url.host == "sos" {
+                        self.initialRoute = "tips"
+                    }
+                }
         }
     }
 }

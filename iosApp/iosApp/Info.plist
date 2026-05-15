@@ -15,5 +15,16 @@
 			<string>com.gantlab.satori.sos</string>
 		</dict>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>satori</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.gantlab.satori</string>
+		</dict>
+	</array>
 </dict>
 </plist>
