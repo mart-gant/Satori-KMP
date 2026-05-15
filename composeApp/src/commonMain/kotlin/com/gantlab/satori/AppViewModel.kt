@@ -13,12 +13,16 @@ import com.gantlab.satori.db.MoodEntry
 import com.gantlab.satori.db.SocialScenario
 import com.gantlab.satori.db.SelfAssessmentResult
 import com.gantlab.satori.notifications.NotificationManager
+import com.gantlab.satori.network.SatoriApiService
+import kotlinx.coroutines.launch
+import androidx.lifecycle.viewModelScope
 
 class AppViewModel(
     private val repository: SatoriRepository,
     private val settings: SettingsManager,
     private val analytics: Analytics,
-    private val notifications: NotificationManager? = null
+    private val notifications: NotificationManager? = null,
+    private val api: SatoriApiService? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppState())
@@ -40,6 +44,7 @@ class AppViewModel(
         loadScenarios()
         loadSelfAssessmentHistory()
         updateRecommendations()
+        syncDataWithServer()
         analytics.logEvent(AnalyticsEvents.SCREEN_VIEW, mapOf("screen" to "home"))
     }
 
@@ -170,6 +175,19 @@ class AppViewModel(
         loadMoodHistory()
         updateRecommendations()
         analytics.logEvent("mood_logged", mapOf("mood" to mood.toString(), "energy" to energy.toString()))
+        
+        // Sync with server
+        viewModelScope.launch {
+            api?.postMood(mood, energy, note)
+        }
+    }
+
+    fun syncDataWithServer() {
+        viewModelScope.launch {
+            val serverHistory = api?.getMoodHistory() ?: emptyList()
+            // Here you could implement logic to merge server history with local history
+            println("SYNC: Received ${serverHistory.size} entries from server")
+        }
     }
 
     fun updateMoodNote(id: Long, note: String) {

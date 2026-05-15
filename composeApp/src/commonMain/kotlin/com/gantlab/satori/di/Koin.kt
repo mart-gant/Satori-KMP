@@ -3,6 +3,7 @@ package com.gantlab.satori.di
 import com.gantlab.satori.AppViewModel
 import com.gantlab.satori.db.SatoriRepository
 import com.gantlab.satori.settings.SettingsManager
+import com.gantlab.satori.network.SatoriApiService
 import com.gantlab.satori.getAnalytics
 import com.gantlab.satori.Analytics
 import com.gantlab.satori.db.DriverFactory
@@ -17,6 +18,7 @@ import org.koin.core.KoinApplication
 val commonModule: Module = module {
     single<SettingsManager> { SettingsManager() }
     single<NotificationManager> { DummyNotificationManager() }
+    single<SatoriApiService> { SatoriApiService() }
     single<SatoriRepository> { 
         val factory: DriverFactory = get()
         SatoriRepository(driverFactory = factory) 
@@ -27,7 +29,8 @@ val commonModule: Module = module {
         val sets: SettingsManager = get()
         val an: Analytics = get()
         val notif: NotificationManager = get()
-        AppViewModel(repo, sets, an, notif)
+        val api: SatoriApiService = get()
+        AppViewModel(repo, sets, an, notif, api)
     }
 }
 
