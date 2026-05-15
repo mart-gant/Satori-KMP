@@ -1,5 +1,6 @@
 package com.gantlab.satori.notifications
 
+@Suppress("unused")
 class DummyNotificationManager : NotificationManager {
     override fun scheduleTaskNotification(taskId: Long, title: String, time: String) {
         println("DUMMY NOTIFICATION: Scheduled '$title' at $time for task $taskId")

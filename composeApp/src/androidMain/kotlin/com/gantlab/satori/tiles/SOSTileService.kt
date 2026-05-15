@@ -8,6 +8,7 @@ import com.gantlab.satori.MainActivity
 
 class SOSTileService : TileService() {
 
+    @Suppress("DEPRECATION")
     override fun onClick() {
         super.onClick()
         
@@ -26,7 +27,6 @@ class SOSTileService : TileService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startActivityAndCollapse(pendingIntent)
         } else {
-            @Suppress("DEPRECATION")
             startActivityAndCollapse(intent)
         }
     }

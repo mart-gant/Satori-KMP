@@ -38,10 +38,6 @@ open class SatoriRepository(private val database: SatoriDatabase) {
         dbQueries.updateMoodNote(note, id)
     }
 
-    open fun updateMoodScores(id: Long, moodScore: Long, energyScore: Long) {
-        dbQueries.updateMoodScores(moodScore, energyScore, id)
-    }
-
     // --- Mind Challenges ---
 
     open fun insertChallengeResult(type: String, score: Long) {

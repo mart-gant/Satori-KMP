@@ -64,9 +64,6 @@ SELECT * FROM MoodEntry ORDER BY timestamp DESC;
 updateMoodNote:
 UPDATE MoodEntry SET note = ? WHERE id = ?;
 
-updateMoodScores:
-UPDATE MoodEntry SET moodScore = ?, energyScore = ? WHERE id = ?;
-
 -- Queries for ChallengeResult
 insertChallengeResult:
 INSERT INTO ChallengeResult(timestamp, challengeType, score)
