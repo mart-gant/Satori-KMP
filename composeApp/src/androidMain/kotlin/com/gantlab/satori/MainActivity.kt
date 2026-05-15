@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.gantlab.satori.ui.Routes
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,8 +25,13 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        val initialRoute = when (intent?.getStringExtra("navigate_to")) {
+            "tips" -> Routes.TIPS
+            else -> null
+        }
+
         setContent {
-            App()
+            App(initialRoute = initialRoute)
         }
     }
 }

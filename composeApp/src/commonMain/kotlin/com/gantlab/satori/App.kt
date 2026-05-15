@@ -13,10 +13,16 @@ import com.gantlab.satori.ui.*
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun App() {
+fun App(initialRoute: String? = null) {
     val viewModel: AppViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val navController = rememberNavController()
+
+    LaunchedEffect(initialRoute) {
+        if (initialRoute != null && uiState.isOnboardingCompleted) {
+            navController.navigate(initialRoute)
+        }
+    }
 
     SatoriTheme(
         highContrast = uiState.highContrast,

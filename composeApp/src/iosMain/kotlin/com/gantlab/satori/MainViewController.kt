@@ -5,10 +5,10 @@ import com.gantlab.satori.di.initKoinIos
 import com.gantlab.satori.db.DriverFactory
 import com.gantlab.satori.notifications.IosNotificationManager
 
-fun MainViewController() = ComposeUIViewController {
+fun MainViewController(initialRoute: String? = null) = ComposeUIViewController {
     initKoinIos(
         factory = DriverFactory(),
         notifications = IosNotificationManager()
     )
-    App()
+    App(initialRoute = initialRoute)
 }

@@ -4,5 +4,16 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeAlarm</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Satori SOS</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.gantlab.satori.sos</string>
+		</dict>
+	</array>
 </dict>
 </plist>
