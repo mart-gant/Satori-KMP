@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,11 +24,43 @@ import kotlinx.datetime.toLocalDateTime
 fun MoodLoggingScreen(
     history: List<MoodEntry>,
     onSaveMood: (Long, Long, String) -> Unit,
+    onUpdateNote: (Long, String) -> Unit,
     onBack: () -> Unit
 ) {
     var selectedMood by remember { mutableLongStateOf(3L) }
     var selectedEnergy by remember { mutableLongStateOf(3L) }
     var note by remember { mutableStateOf("") }
+    
+    var editingEntry by remember { mutableStateOf<MoodEntry?>(null) }
+    var editNoteText by remember { mutableStateOf("") }
+
+    if (editingEntry != null) {
+        AlertDialog(
+            onDismissRequest = { editingEntry = null },
+            title = { Text("Edytuj notatkę") },
+            text = {
+                OutlinedTextField(
+                    value = editNoteText,
+                    onValueChange = { editNoteText = it },
+                    label = { Text("Twoja notatka") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    editingEntry?.let { onUpdateNote(it.id, editNoteText) }
+                    editingEntry = null
+                }) {
+                    Text("Zapisz")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { editingEntry = null }) {
+                    Text("Anuluj")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -94,7 +127,10 @@ fun MoodLoggingScreen(
             }
 
             items(history.take(10)) { entry ->
-                MoodHistoryItem(entry)
+                MoodHistoryItem(entry, onEdit = {
+                    editingEntry = entry
+                    editNoteText = entry.note ?: ""
+                })
             }
         }
     }
@@ -131,7 +167,7 @@ fun RatingSelector(
 }
 
 @Composable
-fun MoodHistoryItem(entry: MoodEntry) {
+fun MoodHistoryItem(entry: MoodEntry, onEdit: () -> Unit) {
     val date = Instant.fromEpochMilliseconds(entry.timestamp)
         .toLocalDateTime(TimeZone.currentSystemDefault())
     
@@ -142,15 +178,20 @@ fun MoodHistoryItem(entry: MoodEntry) {
         Column(Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "${date.hour}:${date.minute.toString().padStart(2, '0')} | ${date.dayOfMonth}.${date.monthNumber}",
                     style = MaterialTheme.typography.bodySmall
                 )
-                Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("M: ${getMoodEmoji(entry.moodScore)}", modifier = Modifier.padding(horizontal = 4.dp))
                     Text("E: ${getEnergyEmoji(entry.energyScore)}")
+                    Spacer(Modifier.width(8.dp))
+                    IconButton(onClick = onEdit, modifier = Modifier.size(24.dp)) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edytuj", modifier = Modifier.size(16.dp))
+                    }
                 }
             }
             if (!entry.note.isNullOrBlank()) {

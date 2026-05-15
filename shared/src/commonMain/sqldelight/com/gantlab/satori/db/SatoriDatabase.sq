@@ -61,6 +61,12 @@ VALUES (?, ?, ?, ?);
 getMoodHistory:
 SELECT * FROM MoodEntry ORDER BY timestamp DESC;
 
+updateMoodNote:
+UPDATE MoodEntry SET note = ? WHERE id = ?;
+
+updateMoodScores:
+UPDATE MoodEntry SET moodScore = ?, energyScore = ? WHERE id = ?;
+
 -- Queries for ChallengeResult
 insertChallengeResult:
 INSERT INTO ChallengeResult(timestamp, challengeType, score)
@@ -77,12 +83,21 @@ VALUES (?, ?, ?);
 getAllRoutines:
 SELECT * FROM Routine;
 
+updateRoutine:
+UPDATE Routine SET title = ?, icon = ?, isActive = ? WHERE id = ?;
+
 insertRoutineTask:
 INSERT INTO RoutineTask(routineId, taskName, scheduledTime)
 VALUES (?, ?, ?);
 
 getTasksForRoutine:
 SELECT * FROM RoutineTask WHERE routineId = ?;
+
+updateTaskCompletion:
+UPDATE RoutineTask SET isCompletedToday = ? WHERE id = ?;
+
+updateTaskDetails:
+UPDATE RoutineTask SET taskName = ?, scheduledTime = ? WHERE id = ?;
 
 deleteRoutine:
 DELETE FROM Routine WHERE id = ?;

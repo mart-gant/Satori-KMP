@@ -3,8 +3,12 @@ package com.gantlab.satori
 import androidx.compose.ui.window.ComposeUIViewController
 import com.gantlab.satori.di.initKoinIos
 import com.gantlab.satori.db.DriverFactory
+import com.gantlab.satori.notifications.IosNotificationManager
 
 fun MainViewController() = ComposeUIViewController {
-    initKoinIos(DriverFactory())
+    initKoinIos(
+        factory = DriverFactory(),
+        notifications = IosNotificationManager()
+    )
     App()
 }

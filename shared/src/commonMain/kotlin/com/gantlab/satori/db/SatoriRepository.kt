@@ -34,6 +34,14 @@ open class SatoriRepository(private val database: SatoriDatabase) {
         return dbQueries.getMoodHistory().executeAsList()
     }
 
+    open fun updateMoodNote(id: Long, note: String?) {
+        dbQueries.updateMoodNote(note, id)
+    }
+
+    open fun updateMoodScores(id: Long, moodScore: Long, energyScore: Long) {
+        dbQueries.updateMoodScores(moodScore, energyScore, id)
+    }
+
     // --- Mind Challenges ---
 
     open fun insertChallengeResult(type: String, score: Long) {
@@ -58,12 +66,24 @@ open class SatoriRepository(private val database: SatoriDatabase) {
         return dbQueries.getAllRoutines().executeAsList()
     }
 
+    open fun updateRoutine(id: Long, title: String, icon: String?, isActive: Boolean) {
+        dbQueries.updateRoutine(title, icon, if (isActive) 1L else 0L, id)
+    }
+
     open fun addTaskToRoutine(routineId: Long, name: String, time: String?) {
         dbQueries.insertRoutineTask(routineId, name, time)
     }
 
     open fun getTasksForRoutine(routineId: Long): List<RoutineTask> {
         return dbQueries.getTasksForRoutine(routineId).executeAsList()
+    }
+
+    open fun updateTaskCompletion(taskId: Long, isCompleted: Boolean) {
+        dbQueries.updateTaskCompletion(if (isCompleted) 1L else 0L, taskId)
+    }
+
+    open fun updateTaskDetails(taskId: Long, name: String, time: String?) {
+        dbQueries.updateTaskDetails(name, time, taskId)
     }
 
     open fun deleteRoutine(id: Long) {

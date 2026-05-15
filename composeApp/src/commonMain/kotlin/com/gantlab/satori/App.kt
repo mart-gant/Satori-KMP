@@ -86,8 +86,12 @@ fun App() {
             composable(Routes.ROUTINES) {
                 RoutineScreen(
                     routines = uiState.routines,
+                    tasks = uiState.routineTasks,
                     onAddRoutine = viewModel::addRoutine,
                     onDeleteRoutine = viewModel::deleteRoutine,
+                    onAddTask = viewModel::addTaskToRoutine,
+                    onUpdateTaskStatus = viewModel::updateTaskCompletion,
+                    onUpdateTaskName = viewModel::updateTaskDetails,
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -95,6 +99,7 @@ fun App() {
                 MoodLoggingScreen(
                     history = uiState.moodHistory,
                     onSaveMood = viewModel::saveMood,
+                    onUpdateNote = viewModel::updateMoodNote,
                     onBack = { navController.popBackStack() }
                 )
             }

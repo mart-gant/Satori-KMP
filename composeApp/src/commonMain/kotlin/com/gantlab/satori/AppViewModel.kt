@@ -8,14 +8,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import com.gantlab.satori.db.ReactionResult
 import com.gantlab.satori.db.Routine
+import com.gantlab.satori.db.RoutineTask
 import com.gantlab.satori.db.MoodEntry
 import com.gantlab.satori.db.SocialScenario
 import com.gantlab.satori.db.SelfAssessmentResult
+import com.gantlab.satori.notifications.NotificationManager
 
 class AppViewModel(
     private val repository: SatoriRepository,
     private val settings: SettingsManager,
     private val analytics: Analytics,
+    private val notifications: NotificationManager? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppState())
@@ -102,7 +105,13 @@ class AppViewModel(
 
     fun loadRoutines() {
         val routines = repository.getAllRoutines()
-        _uiState.update { it.copy(routines = routines) }
+        val tasksMap = routines.associate { it.id to repository.getTasksForRoutine(it.id) }
+        _uiState.update { 
+            it.copy(
+                routines = routines,
+                routineTasks = tasksMap
+            ) 
+        }
     }
 
     fun addRoutine(title: String) {
@@ -110,8 +119,42 @@ class AppViewModel(
         loadRoutines()
     }
 
+    fun updateRoutine(id: Long, title: String, icon: String?, isActive: Boolean) {
+        repository.updateRoutine(id, title, icon, isActive)
+        loadRoutines()
+    }
+
+    fun addTaskToRoutine(routineId: Long, name: String, time: String?) {
+        repository.addTaskToRoutine(routineId, name, time)
+        loadRoutines()
+        
+        if (time != null) {
+            // Find the ID of the newly created task (best effort)
+            val newTask = repository.getTasksForRoutine(routineId).firstOrNull { it.taskName == name && it.scheduledTime == time }
+            newTask?.let { 
+                notifications?.scheduleTaskNotification(it.id, it.taskName, time)
+            }
+        }
+    }
+
+    fun updateTaskDetails(taskId: Long, name: String, time: String?) {
+        repository.updateTaskDetails(taskId, name, time)
+        loadRoutines()
+        
+        if (time != null) {
+            notifications?.scheduleTaskNotification(taskId, name, time)
+        } else {
+            notifications?.cancelTaskNotification(taskId)
+        }
+    }
+
     fun deleteRoutine(id: Long) {
         repository.deleteRoutine(id)
+        loadRoutines()
+    }
+
+    fun updateTaskCompletion(taskId: Long, isCompleted: Boolean) {
+        repository.updateTaskCompletion(taskId, isCompleted)
         loadRoutines()
     }
 
@@ -127,6 +170,11 @@ class AppViewModel(
         loadMoodHistory()
         updateRecommendations()
         analytics.logEvent("mood_logged", mapOf("mood" to mood.toString(), "energy" to energy.toString()))
+    }
+
+    fun updateMoodNote(id: Long, note: String) {
+        repository.updateMoodNote(id, note)
+        loadMoodHistory()
     }
 
     // --- Mind Challenges ---
@@ -233,6 +281,7 @@ data class AppState(
     val animationsEnabled: Boolean = true,
     val results: List<ReactionResult> = emptyList(),
     val routines: List<Routine> = emptyList(),
+    val routineTasks: Map<Long, List<RoutineTask>> = emptyMap(),
     val moodHistory: List<MoodEntry> = emptyList(),
     val scenarios: List<SocialScenario> = emptyList(),
     val selfAssessmentHistory: List<SelfAssessmentResult> = emptyList(),
