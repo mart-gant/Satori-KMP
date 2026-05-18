@@ -61,6 +61,13 @@ VALUES (?, ?, ?, ?);
 getMoodHistory:
 SELECT * FROM MoodEntry ORDER BY timestamp DESC;
 
+insertMoodWithTimestamp:
+INSERT INTO MoodEntry(timestamp, moodScore, energyScore, note)
+VALUES (?, ?, ?, ?);
+
+getMoodByTimestamp:
+SELECT * FROM MoodEntry WHERE timestamp = ?;
+
 updateMoodNote:
 UPDATE MoodEntry SET note = ? WHERE id = ?;
 

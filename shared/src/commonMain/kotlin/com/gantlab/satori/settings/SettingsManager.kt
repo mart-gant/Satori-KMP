@@ -25,4 +25,11 @@ class SettingsManager(private val settings: Settings = Settings()) {
     var animationsEnabled: Boolean
         get() = settings["animations_enabled", true]
         set(value) { settings["animations_enabled"] = value }
+
+    var authToken: String?
+        get() = settings.getStringOrNull("auth_token")
+        set(value) { 
+            if (value != null) settings.putString("auth_token", value)
+            else settings.remove("auth_token")
+        }
 }

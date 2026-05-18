@@ -18,12 +18,35 @@ class SatoriApiService {
         }
     }
 
-    // Replace with your server IP for physical devices, or localhost for emulator
     private val baseUrl = "http://10.0.2.2:8080" 
 
-    suspend fun postMood(moodScore: Long, energyScore: Long, note: String?): MoodResponse? {
+    suspend fun register(authRequest: AuthRequest): Boolean {
+        return try {
+            val response = client.post("$baseUrl/register") {
+                contentType(ContentType.Application.Json)
+                setBody(authRequest)
+            }
+            response.status == HttpStatusCode.Created
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun login(authRequest: AuthRequest): AuthResponse? {
+        return try {
+            client.post("$baseUrl/login") {
+                contentType(ContentType.Application.Json)
+                setBody(authRequest)
+            }.body()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun postMood(token: String, moodScore: Long, energyScore: Long, note: String?): MoodResponse? {
         return try {
             client.post("$baseUrl/mood") {
+                header(HttpHeaders.Authorization, "Bearer $token")
                 contentType(ContentType.Application.Json)
                 setBody(MoodRequest(moodScore, energyScore, note))
             }.body()
@@ -33,9 +56,11 @@ class SatoriApiService {
         }
     }
 
-    suspend fun getMoodHistory(): List<MoodResponse> {
+    suspend fun getMoodHistory(token: String): List<MoodResponse> {
         return try {
-            client.get("$baseUrl/mood").body()
+            client.get("$baseUrl/mood") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }.body()
         } catch (e: Exception) {
             println("NETWORK ERROR: ${e.message}")
             emptyList()

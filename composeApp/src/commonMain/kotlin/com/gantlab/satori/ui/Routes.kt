@@ -14,4 +14,5 @@ object Routes {
     const val SELF_ASSESSMENT = "self_assessment"
     const val COLOR_CLASH = "color_clash"
     const val MEMORY_GAME = "memory_game"
+    const val AUTH = "auth"
 }

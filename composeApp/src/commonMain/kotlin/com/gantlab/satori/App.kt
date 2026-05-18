@@ -127,11 +127,14 @@ fun App(initialRoute: String? = null) {
                     highContrast = uiState.highContrast,
                     largeFont = uiState.largeFont,
                     animationsEnabled = uiState.animationsEnabled,
+                    isLoggedIn = uiState.isLoggedIn,
                     onNicknameChange = viewModel::updateNickname,
                     onHighContrastChange = viewModel::toggleHighContrast,
                     onLargeFontChange = viewModel::toggleLargeFont,
                     onAnimationsChange = viewModel::toggleAnimations,
                     onNavigateToAbout = { navController.navigate(Routes.ABOUT) },
+                    onNavigateToAuth = { navController.navigate(Routes.AUTH) },
+                    onLogout = viewModel::logout,
                     onExportData = {
                         val csvData = viewModel.getExportData()
                         getPlatform().shareText(csvData) // Or use a more specific file sharing if available
@@ -148,6 +151,22 @@ fun App(initialRoute: String? = null) {
             }
             composable(Routes.ABOUT) {
                 AboutScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.AUTH) {
+                AuthScreen(
+                    onLogin = { u, p ->
+                        viewModel.login(u, p) { success ->
+                            if (success) navController.popBackStack()
+                        }
+                    },
+                    onRegister = { u, p ->
+                        viewModel.register(u, p) { success ->
+                            // After register, we could auto-login or just switch to login mode
+                            // For now let's just stay on the screen or show a success message
+                        }
+                    },
                     onBack = { navController.popBackStack() }
                 )
             }

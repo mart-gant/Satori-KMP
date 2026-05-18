@@ -14,6 +14,7 @@ import com.gantlab.satori.db.SocialScenario
 import com.gantlab.satori.db.SelfAssessmentResult
 import com.gantlab.satori.notifications.NotificationManager
 import com.gantlab.satori.network.SatoriApiService
+import com.gantlab.satori.network.AuthRequest
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
 
@@ -22,7 +23,7 @@ class AppViewModel(
     private val settings: SettingsManager,
     private val analytics: Analytics,
     private val notifications: NotificationManager? = null,
-    private val api: SatoriApiService? = null
+    private val api: SatoriApiService? = null,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppState())
@@ -36,6 +37,7 @@ class AppViewModel(
                 highContrast = settings.highContrast,
                 largeFont = settings.largeFont,
                 animationsEnabled = settings.animationsEnabled,
+                isLoggedIn = settings.authToken != null
             )
         }
         loadResults()
@@ -44,7 +46,9 @@ class AppViewModel(
         loadScenarios()
         loadSelfAssessmentHistory()
         updateRecommendations()
-        syncDataWithServer()
+        if (settings.authToken != null) {
+            syncDataWithServer()
+        }
         analytics.logEvent(AnalyticsEvents.SCREEN_VIEW, mapOf("screen" to "home"))
     }
 
@@ -110,7 +114,7 @@ class AppViewModel(
 
     fun loadRoutines() {
         val routines = repository.getAllRoutines()
-        val tasksMap = routines.associate { it.id to repository.getTasksForRoutine(it.id) }
+        val tasksMap = routines.associateBy({ it.id }, { repository.getTasksForRoutine(it.id) })
         _uiState.update { 
             it.copy(
                 routines = routines,
@@ -135,7 +139,7 @@ class AppViewModel(
         
         if (time != null) {
             // Find the ID of the newly created task (best effort)
-            val newTask = repository.getTasksForRoutine(routineId).firstOrNull { it.taskName == name && it.scheduledTime == time }
+            val newTask = repository.getTasksForRoutine(routineId).firstOrNull { (it.taskName == name) && (it.scheduledTime == time) }
             newTask?.let { 
                 notifications?.scheduleTaskNotification(it.id, it.taskName, time)
             }
@@ -177,16 +181,68 @@ class AppViewModel(
         analytics.logEvent("mood_logged", mapOf("mood" to mood.toString(), "energy" to energy.toString()))
         
         // Sync with server
-        viewModelScope.launch {
-            api?.postMood(mood, energy, note)
+        val token = settings.authToken
+        if (token != null) {
+            viewModelScope.launch {
+                api?.postMood(token, mood, energy, note)
+            }
         }
     }
 
-    fun syncDataWithServer() {
+    fun login(username: String, password: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val serverHistory = api?.getMoodHistory() ?: emptyList()
-            // Here you could implement logic to merge server history with local history
-            println("SYNC: Received ${serverHistory.size} entries from server")
+            val response = api?.login(AuthRequest(username, password))
+            if (response != null) {
+                settings.authToken = response.token
+                settings.nickname = response.username
+                _uiState.update { it.copy(isLoggedIn = true, nickname = response.username) }
+                syncDataWithServer()
+                onResult(true)
+            } else {
+                onResult(false)
+            }
+        }
+    }
+
+    fun register(username: String, password: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val success = api?.register(AuthRequest(username, password)) ?: false
+            onResult(success)
+        }
+    }
+
+    fun logout() {
+        settings.authToken = null
+        _uiState.update { it.copy(isLoggedIn = false) }
+    }
+
+    fun syncDataWithServer() {
+        val token = settings.authToken ?: return
+        viewModelScope.launch {
+            try {
+                val serverHistory = api?.getMoodHistory(token) ?: emptyList()
+                var addedCount = 0
+                
+                serverHistory.forEach { serverMood ->
+                    if (!repository.moodExists(serverMood.timestamp)) {
+                        repository.insertMoodWithTimestamp(
+                            timestamp = serverMood.timestamp,
+                            moodScore = serverMood.moodScore,
+                            energyScore = serverMood.energyScore,
+                            note = serverMood.note
+                        )
+                        addedCount++
+                    }
+                }
+                
+                if (addedCount > 0) {
+                    loadMoodHistory()
+                    updateRecommendations()
+                }
+                println("SYNC: Received ${serverHistory.size} entries, added $addedCount new ones to local DB.")
+            } catch (e: Exception) {
+                println("SYNC ERROR: ${e.message}")
+            }
         }
     }
 
@@ -293,6 +349,7 @@ class AppViewModel(
 
 data class AppState(
     val isOnboardingCompleted: Boolean = false,
+    val isLoggedIn: Boolean = false,
     val nickname: String = "",
     val highContrast: Boolean = false,
     val largeFont: Boolean = false,

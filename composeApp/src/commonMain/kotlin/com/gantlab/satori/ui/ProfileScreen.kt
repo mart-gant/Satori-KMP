@@ -17,11 +17,14 @@ fun ProfileScreen(
     highContrast: Boolean,
     largeFont: Boolean,
     animationsEnabled: Boolean,
+    isLoggedIn: Boolean,
     onNicknameChange: (String) -> Unit,
     onHighContrastChange: (Boolean) -> Unit,
     onLargeFontChange: (Boolean) -> Unit,
     onAnimationsChange: (Boolean) -> Unit,
     onNavigateToAbout: () -> Unit,
+    onNavigateToAuth: () -> Unit,
+    onLogout: () -> Unit,
     onExportData: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -74,6 +77,32 @@ fun ProfileScreen(
                 Text("Animacje włączone")
                 Spacer(Modifier.weight(1f))
                 Switch(checked = animationsEnabled, onCheckedChange = onAnimationsChange)
+            }
+
+            Spacer(Modifier.height(24.dp))
+            
+            Text("Chmura i Synchronizacja", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            
+            if (isLoggedIn) {
+                Text("Zalogowano jako: $nickname", style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = onLogout,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer)
+                ) {
+                    Text("Wyloguj się")
+                }
+            } else {
+                Text("Twoje dane są zapisywane tylko lokalnie.", style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = onNavigateToAuth,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Zaloguj lub Zarejestruj")
+                }
             }
 
             Spacer(Modifier.weight(1f))

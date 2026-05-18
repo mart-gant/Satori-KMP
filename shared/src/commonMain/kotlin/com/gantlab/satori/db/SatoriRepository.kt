@@ -34,6 +34,14 @@ open class SatoriRepository(private val database: SatoriDatabase) {
         return dbQueries.getMoodHistory().executeAsList()
     }
 
+    open fun insertMoodWithTimestamp(timestamp: Long, moodScore: Long, energyScore: Long, note: String?) {
+        dbQueries.insertMoodWithTimestamp(timestamp, moodScore, energyScore, note)
+    }
+
+    open fun moodExists(timestamp: Long): Boolean {
+        return dbQueries.getMoodByTimestamp(timestamp).executeAsOneOrNull() != null
+    }
+
     open fun updateMoodNote(id: Long, note: String?) {
         dbQueries.updateMoodNote(note, id)
     }
