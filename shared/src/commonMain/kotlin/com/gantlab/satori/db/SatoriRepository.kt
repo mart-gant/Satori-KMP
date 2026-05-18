@@ -84,6 +84,13 @@ open class SatoriRepository(private val database: SatoriDatabase) {
 
     open fun updateTaskCompletion(taskId: Long, isCompleted: Boolean) {
         dbQueries.updateTaskCompletion(if (isCompleted) 1L else 0L, taskId)
+        if (isCompleted) {
+            dbQueries.insertTaskCompletion(taskId, Clock.System.now().toEpochMilliseconds())
+        }
+    }
+
+    open fun getTaskCompletions(sinceTimestamp: Long): List<TaskCompletion> {
+        return dbQueries.getCompletionsForPeriod(sinceTimestamp).executeAsList()
     }
 
     open fun updateTaskDetails(taskId: Long, name: String, time: String?) {

@@ -146,6 +146,7 @@ fun App(initialRoute: String? = null) {
                 ReportsScreen(
                     results = uiState.results,
                     moodHistory = uiState.moodHistory,
+                    taskCompletions = uiState.taskCompletions,
                     onBack = { navController.popBackStack() }
                 )
             }

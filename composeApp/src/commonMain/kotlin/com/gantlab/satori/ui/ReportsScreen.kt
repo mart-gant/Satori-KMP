@@ -1,6 +1,7 @@
 package com.gantlab.satori.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,8 +18,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.gantlab.satori.db.ReactionResult
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import com.gantlab.satori.db.MoodEntry
+import kotlinx.datetime.*
 import org.jetbrains.compose.resources.stringResource
 import satori.composeapp.generated.resources.*
 
@@ -26,13 +27,14 @@ import satori.composeapp.generated.resources.*
 @Composable
 fun ReportsScreen(
     results: List<ReactionResult>,
-    moodHistory: List<com.gantlab.satori.db.MoodEntry> = emptyList(),
+    moodHistory: List<MoodEntry> = emptyList(),
+    taskCompletions: List<com.gantlab.satori.db.TaskCompletion> = emptyList(),
     onBack: () -> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.app_name)) },
+                title = { Text("Twoje Wzorce") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
@@ -41,7 +43,21 @@ fun ReportsScreen(
             )
         }
     ) { padding ->
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            item {
+                Text("Mapa Nastroju i Rutyn (7 dni)", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
+                MoodHeatmap(moodHistory, taskCompletions)
+                Text(
+                    "Ciemniejszy zielony = lepszy nastrój. Kropka (•) = wykonana rutyna.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
             item {
                 Text("Historia Reakcji", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
@@ -55,23 +71,6 @@ fun ReportsScreen(
                         }
                     }
                 }
-                Spacer(Modifier.height(24.dp))
-            }
-
-            item {
-                Text("Historia Nastroju", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(8.dp))
-
-                if (moodHistory.size >= 2) {
-                    LineChart(moodHistory.map { it.moodScore }.reversed().toList(), color = Color(0xFF9C27B0), maxValue = 5f)
-                } else {
-                    Card(modifier = Modifier.fillMaxWidth().height(100.dp)) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Text("Zbyt mało danych nastroju.")
-                        }
-                    }
-                }
-                Spacer(Modifier.height(24.dp))
             }
 
             item {
@@ -79,7 +78,7 @@ fun ReportsScreen(
                 Spacer(Modifier.height(8.dp))
             }
 
-            items(results) { result ->
+            items(results.take(10)) { result ->
                 ResultItem(result)
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             }
@@ -88,9 +87,83 @@ fun ReportsScreen(
 }
 
 @Composable
+fun MoodHeatmap(history: List<MoodEntry>, completions: List<com.gantlab.satori.db.TaskCompletion> = emptyList()) {
+    val days = listOf("Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd")
+    val times = listOf("Rano", "Dzień", "Wieczór")
+    
+    val grid = Array(7) { arrayOfNulls<Long>(3) }
+    val routineGrid = Array(7) { BooleanArray(3) { false } }
+    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    
+    history.forEach { entry ->
+        val entryDate = Instant.fromEpochMilliseconds(entry.timestamp).toLocalDateTime(TimeZone.currentSystemDefault())
+        if (entryDate.date > now.date.minus(7, DateTimeUnit.DAY)) {
+            val dayIdx = (entryDate.dayOfWeek.isoDayNumber - 1) % 7
+            val timeIdx = when (entryDate.hour) {
+                in 5..11 -> 0
+                in 12..18 -> 1
+                else -> 2
+            }
+            grid[dayIdx][timeIdx] = entry.moodScore
+        }
+    }
+
+    completions.forEach { completion ->
+        val cDate = Instant.fromEpochMilliseconds(completion.timestamp).toLocalDateTime(TimeZone.currentSystemDefault())
+        if (cDate.date > now.date.minus(7, DateTimeUnit.DAY)) {
+            val dayIdx = (cDate.dayOfWeek.isoDayNumber - 1) % 7
+            val timeIdx = when (cDate.hour) {
+                in 5..11 -> 0
+                in 12..18 -> 1
+                else -> 2
+            }
+            routineGrid[dayIdx][timeIdx] = true
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.padding(start = 50.dp)) {
+            days.forEach { day ->
+                Text(day, modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelSmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            }
+        }
+        
+        times.forEachIndexed { tIdx, timeLabel ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(timeLabel, modifier = Modifier.width(50.dp), style = MaterialTheme.typography.labelSmall)
+                for (dIdx in 0..6) {
+                    val score = grid[dIdx][tIdx]
+                    val hasRoutine = routineGrid[dIdx][tIdx]
+                    val color = when (score) {
+                        5L -> Color(0xFF1B5E20)
+                        4L -> Color(0xFF4CAF50)
+                        3L -> Color(0xFF81C784)
+                        2L -> Color(0xFFA5D6A7)
+                        1L -> Color(0xFFC8E6C9)
+                        else -> MaterialTheme.colorScheme.surfaceVariant
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .padding(2.dp)
+                            .background(color, shape = MaterialTheme.shapes.extraSmall),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (hasRoutine) {
+                            Text("•", color = Color.White, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun ResultItem(result: ReactionResult) {
     val dateTime = remember(result.timestamp) {
-        kotlinx.datetime.Instant.fromEpochMilliseconds(result.timestamp)
+        Instant.fromEpochMilliseconds(result.timestamp)
             .toLocalDateTime(TimeZone.currentSystemDefault())
     }
     val dateString = "${dateTime.dayOfMonth}.${dateTime.monthNumber} ${dateTime.hour}:${dateTime.minute.toString().padStart(2, '0')}"
@@ -101,7 +174,7 @@ fun ResultItem(result: ReactionResult) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(text = "${stringResource(Res.string.result_label).replace("%d", result.reactionTimeMs.toString())}", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Wynik: ${result.reactionTimeMs} ms", style = MaterialTheme.typography.bodyLarge)
             Text(text = dateString, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
 
@@ -114,9 +187,9 @@ fun ResultItem(result: ReactionResult) {
         Surface(color = qualityColor, shape = MaterialTheme.shapes.small) {
             Box(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                 Text(
-                    text = if (result.reactionTimeMs < 250) stringResource(Res.string.fast) 
-                           else if (result.reactionTimeMs < 400) stringResource(Res.string.ok) 
-                           else stringResource(Res.string.slow),
+                    text = if (result.reactionTimeMs < 250) "Szybko" 
+                           else if (result.reactionTimeMs < 400) "Dobrze" 
+                           else "Wolno",
                     color = Color.White,
                     style = MaterialTheme.typography.labelSmall
                 )

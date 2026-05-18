@@ -114,6 +114,21 @@ insertScenario:
 INSERT INTO SocialScenario(title, description, steps, category)
 VALUES (?, ?, ?, ?);
 
+-- Task Completion History
+CREATE TABLE TaskCompletion (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    taskId INTEGER NOT NULL,
+    timestamp INTEGER NOT NULL,
+    FOREIGN KEY(taskId) REFERENCES RoutineTask(id) ON DELETE CASCADE
+);
+
+insertTaskCompletion:
+INSERT INTO TaskCompletion(taskId, timestamp)
+VALUES (?, ?);
+
+getCompletionsForPeriod:
+SELECT * FROM TaskCompletion WHERE timestamp >= ?;
+
 -- Self-Assessment
 CREATE TABLE SelfAssessmentResult (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -6,9 +6,11 @@ import com.gantlab.satori.settings.SettingsManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.datetime.*
 import com.gantlab.satori.db.ReactionResult
 import com.gantlab.satori.db.Routine
 import com.gantlab.satori.db.RoutineTask
+import com.gantlab.satori.db.TaskCompletion
 import com.gantlab.satori.db.MoodEntry
 import com.gantlab.satori.db.SocialScenario
 import com.gantlab.satori.db.SelfAssessmentResult
@@ -42,6 +44,7 @@ class AppViewModel(
         }
         loadResults()
         loadRoutines()
+        loadTaskCompletions()
         loadMoodHistory()
         loadScenarios()
         loadSelfAssessmentHistory()
@@ -165,6 +168,13 @@ class AppViewModel(
     fun updateTaskCompletion(taskId: Long, isCompleted: Boolean) {
         repository.updateTaskCompletion(taskId, isCompleted)
         loadRoutines()
+        loadTaskCompletions()
+    }
+
+    fun loadTaskCompletions() {
+        val sevenDaysAgo = Clock.System.now().minus(7, DateTimeUnit.DAY, TimeZone.currentSystemDefault()).toEpochMilliseconds()
+        val completions = repository.getTaskCompletions(sevenDaysAgo)
+        _uiState.update { it.copy(taskCompletions = completions) }
     }
 
     // --- Mood Logic ---
@@ -357,6 +367,7 @@ data class AppState(
     val results: List<ReactionResult> = emptyList(),
     val routines: List<Routine> = emptyList(),
     val routineTasks: Map<Long, List<RoutineTask>> = emptyMap(),
+    val taskCompletions: List<TaskCompletion> = emptyList(),
     val moodHistory: List<MoodEntry> = emptyList(),
     val scenarios: List<SocialScenario> = emptyList(),
     val selfAssessmentHistory: List<SelfAssessmentResult> = emptyList(),
