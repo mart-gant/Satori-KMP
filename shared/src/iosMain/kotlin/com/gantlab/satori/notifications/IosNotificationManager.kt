@@ -54,4 +54,8 @@ class IosNotificationManager : NotificationManager {
         UNUserNotificationCenter.currentNotificationCenter()
             .removePendingNotificationRequestsWithIdentifiers(listOf(taskId.toString()))
     }
+
+    override fun scheduleDailyReminder(id: Int, title: String, message: String, hour: Int, minute: Int) {
+        // Implementation stub
+    }
 }

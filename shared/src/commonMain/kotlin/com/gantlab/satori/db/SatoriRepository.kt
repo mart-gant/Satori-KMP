@@ -128,13 +128,48 @@ open class SatoriRepository(private val database: SatoriDatabase) {
 
     // --- Data Export ---
 
-    open fun exportMoodToCsv(): String {
-        val history = getMoodHistory()
-        val csv = StringBuilder("Timestamp,Date,Mood,Energy,Note\n")
-        history.forEach {
+    open fun exportAllDataToCsv(): String {
+        val csv = StringBuilder()
+        
+        // Mood
+        csv.append("--- MOOD HISTORY ---\n")
+        csv.append("Timestamp,Date,Mood,Energy,Note\n")
+        getMoodHistory().forEach {
             val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(it.timestamp)
             csv.append("${it.timestamp},${instant},${it.moodScore},${it.energyScore},\"${it.note ?: ""}\"\n")
         }
+        
+        // Reaction Results
+        csv.append("\n--- REACTION TESTS ---\n")
+        csv.append("Timestamp,Date,ReactionTimeMs\n")
+        getAllResults().forEach {
+            val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(it.timestamp)
+            csv.append("${it.timestamp},${instant},${it.reactionTimeMs}\n")
+        }
+        
+        // Challenge Results
+        csv.append("\n--- MIND CHALLENGES ---\n")
+        csv.append("Timestamp,Date,Type,Score\n")
+        val challenges = listOf("color_clash", "memory_game")
+        challenges.forEach { type ->
+            getChallengeHistory(type).forEach {
+                val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(it.timestamp)
+                csv.append("${it.timestamp},${instant},${it.challengeType},${it.score}\n")
+            }
+        }
+        
+        // Self-Assessment
+        csv.append("\n--- SELF ASSESSMENT ---\n")
+        csv.append("Timestamp,Date,Attention,Memory,Executive\n")
+        getSelfAssessmentHistory().forEach {
+            val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(it.timestamp)
+            csv.append("${it.timestamp},${instant},${it.attentionScore},${it.memoryScore},${it.executiveScore}\n")
+        }
+
         return csv.toString()
+    }
+
+    open fun exportMoodToCsv(): String {
+        return exportAllDataToCsv() // Defaulting to all data now
     }
 }

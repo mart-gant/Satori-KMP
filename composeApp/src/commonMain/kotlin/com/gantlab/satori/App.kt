@@ -147,6 +147,10 @@ fun App(initialRoute: String? = null) {
                     results = uiState.results,
                     moodHistory = uiState.moodHistory,
                     taskCompletions = uiState.taskCompletions,
+                    challengeResults = uiState.challengeResults,
+                    selfAssessmentHistory = uiState.selfAssessmentHistory,
+                    aiInsight = uiState.aiInsight,
+                    onGetAiInsight = viewModel::getAiInsights,
                     onBack = { navController.popBackStack() }
                 )
             }

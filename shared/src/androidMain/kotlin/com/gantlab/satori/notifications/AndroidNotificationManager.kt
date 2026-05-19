@@ -83,6 +83,10 @@ class AndroidNotificationManager(private val context: Context) : NotificationMan
         }
     }
 
+    override fun scheduleDailyReminder(id: Int, title: String, message: String, hour: Int, minute: Int) {
+        // Implementation stub
+    }
+
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Satori Rutyny"

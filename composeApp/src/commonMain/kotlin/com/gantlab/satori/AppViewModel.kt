@@ -14,8 +14,10 @@ import com.gantlab.satori.db.TaskCompletion
 import com.gantlab.satori.db.MoodEntry
 import com.gantlab.satori.db.SocialScenario
 import com.gantlab.satori.db.SelfAssessmentResult
+import com.gantlab.satori.db.ChallengeResult
 import com.gantlab.satori.notifications.NotificationManager
 import com.gantlab.satori.network.SatoriApiService
+import com.gantlab.satori.network.AiService
 import com.gantlab.satori.network.AuthRequest
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
@@ -26,6 +28,7 @@ class AppViewModel(
     private val analytics: Analytics,
     private val notifications: NotificationManager? = null,
     private val api: SatoriApiService? = null,
+    private val ai: AiService? = null,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppState())
@@ -48,10 +51,18 @@ class AppViewModel(
         loadMoodHistory()
         loadScenarios()
         loadSelfAssessmentHistory()
+        loadChallengeResults()
         updateRecommendations()
         if (settings.authToken != null) {
             syncDataWithServer()
         }
+        notifications?.scheduleDailyReminder(
+            id = 1001,
+            title = "Dzień dobry!",
+            message = "Czas na poranny test reakcji i sprawdzenie rutyn.",
+            hour = 8,
+            minute = 0
+        )
         analytics.logEvent(AnalyticsEvents.SCREEN_VIEW, mapOf("screen" to "home"))
     }
 
@@ -263,8 +274,22 @@ class AppViewModel(
 
     // --- Mind Challenges ---
 
+    fun loadChallengeResults() {
+        val colorClash = repository.getChallengeHistory("color_clash")
+        val memoryGame = repository.getChallengeHistory("memory_game")
+        _uiState.update { 
+            it.copy(
+                challengeResults = mapOf(
+                    "color_clash" to colorClash,
+                    "memory_game" to memoryGame
+                )
+            )
+        }
+    }
+
     fun saveChallengeResult(type: String, score: Long) {
         repository.insertChallengeResult(type, score)
+        loadChallengeResults()
         analytics.logEvent("challenge_finished", mapOf("type" to type, "score" to score.toString()))
     }
 
@@ -353,7 +378,18 @@ class AppViewModel(
     // --- Export ---
 
     fun getExportData(): String {
-        return repository.exportMoodToCsv()
+        return repository.exportAllDataToCsv()
+    }
+
+    // --- AI Insights ---
+
+    fun getAiInsights() {
+        val dataSummary = repository.exportAllDataToCsv()
+        _uiState.update { it.copy(aiInsight = "Generowanie analizy...") }
+        viewModelScope.launch {
+            val insight = ai?.getInsights(dataSummary) ?: "AI Service nie jest dostępny."
+            _uiState.update { it.copy(aiInsight = insight) }
+        }
     }
 }
 
@@ -371,10 +407,12 @@ data class AppState(
     val moodHistory: List<MoodEntry> = emptyList(),
     val scenarios: List<SocialScenario> = emptyList(),
     val selfAssessmentHistory: List<SelfAssessmentResult> = emptyList(),
+    val challengeResults: Map<String, List<ChallengeResult>> = emptyMap(),
     val recommendations: List<Recommendation> = emptyList(),
     val bestResult: Long? = null,
     val averageResult: Long? = null,
-    val rank: String = "Nowicjusz"
+    val rank: String = "Nowicjusz",
+    val aiInsight: String? = null
 )
 
 data class Tip(val title: String, val description: String, val icon: String)

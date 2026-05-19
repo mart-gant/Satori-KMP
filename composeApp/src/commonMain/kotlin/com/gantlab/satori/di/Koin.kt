@@ -4,6 +4,7 @@ import com.gantlab.satori.AppViewModel
 import com.gantlab.satori.db.SatoriRepository
 import com.gantlab.satori.settings.SettingsManager
 import com.gantlab.satori.network.SatoriApiService
+import com.gantlab.satori.network.AiService
 import com.gantlab.satori.getAnalytics
 import com.gantlab.satori.Analytics
 import com.gantlab.satori.db.DriverFactory
@@ -19,6 +20,7 @@ val commonModule: Module = module {
     single<SettingsManager> { SettingsManager() }
     single<NotificationManager> { DummyNotificationManager() }
     single<SatoriApiService> { SatoriApiService() }
+    single<AiService> { AiService(get<SatoriApiService>().client) }
     single<SatoriRepository> { 
         val factory: DriverFactory = get()
         SatoriRepository(driverFactory = factory) 
@@ -30,7 +32,8 @@ val commonModule: Module = module {
         val an: Analytics = get()
         val notif: NotificationManager = get()
         val api: SatoriApiService = get()
-        AppViewModel(repo, sets, an, notif, api)
+        val ai: AiService = get()
+        AppViewModel(repo, sets, an, notif, api, ai)
     }
 }
 

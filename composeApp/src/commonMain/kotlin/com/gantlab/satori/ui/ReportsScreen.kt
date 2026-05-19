@@ -19,6 +19,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.gantlab.satori.db.ReactionResult
 import com.gantlab.satori.db.MoodEntry
+import com.gantlab.satori.db.ChallengeResult
+import com.gantlab.satori.db.SelfAssessmentResult
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.stringResource
 import satori.composeapp.generated.resources.*
@@ -29,6 +31,10 @@ fun ReportsScreen(
     results: List<ReactionResult>,
     moodHistory: List<MoodEntry> = emptyList(),
     taskCompletions: List<com.gantlab.satori.db.TaskCompletion> = emptyList(),
+    challengeResults: Map<String, List<ChallengeResult>> = emptyMap(),
+    selfAssessmentHistory: List<SelfAssessmentResult> = emptyList(),
+    aiInsight: String? = null,
+    onGetAiInsight: () -> Unit = {},
     onBack: () -> Unit
 ) {
     Scaffold(
@@ -47,6 +53,33 @@ fun ReportsScreen(
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+            item {
+                Text("Analiza AI (Beta)", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        if (aiInsight == null) {
+                            Text("Pobierz inteligentną analizę Twoich danych, aby lepiej zrozumieć swoje wzorce.")
+                            Button(onClick = onGetAiInsight, modifier = Modifier.padding(top = 8.dp)) {
+                                Text("Generuj analizę Gemini")
+                            }
+                        } else {
+                            Text(aiInsight, style = MaterialTheme.typography.bodyMedium)
+                            if (aiInsight == "Generowanie analizy...") {
+                                LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(top = 8.dp))
+                            } else {
+                                Button(onClick = onGetAiInsight, modifier = Modifier.padding(top = 8.dp)) {
+                                    Text("Odśwież analizę")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             item {
                 Text("Mapa Nastroju i Rutyn (7 dni)", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
@@ -70,6 +103,27 @@ fun ReportsScreen(
                             Text(stringResource(Res.string.collect_more_data))
                         }
                     }
+                }
+            }
+
+            // Challenge Results
+            item {
+                Text("Wyzwania Poznawcze", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
+                
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    ChallengeCard("Color Clash", challengeResults["color_clash"] ?: emptyList())
+                    ChallengeCard("Memory Game", challengeResults["memory_game"] ?: emptyList())
+                }
+            }
+
+            item {
+                Text("Trendy Samooceny", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
+                if (selfAssessmentHistory.size >= 2) {
+                    SelfAssessmentTrends(selfAssessmentHistory)
+                } else {
+                    Text("Wypełnij samoocenę przynajmniej dwa razy, aby zobaczyć trendy.", style = MaterialTheme.typography.bodySmall)
                 }
             }
 
@@ -155,6 +209,46 @@ fun MoodHeatmap(history: List<MoodEntry>, completions: List<com.gantlab.satori.d
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun SelfAssessmentTrends(history: List<SelfAssessmentResult>) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            TrendItem("Uwaga", history.map { it.attentionScore }.reversed(), Color(0xFF2196F3))
+            TrendItem("Pamięć", history.map { it.memoryScore }.reversed(), Color(0xFF9C27B0))
+            TrendItem("Funkcje wykonawcze", history.map { it.executiveScore }.reversed(), Color(0xFFFF5722))
+        }
+    }
+}
+
+@Composable
+fun TrendItem(label: String, values: List<Long>, color: Color) {
+    Column {
+        Text(label, style = MaterialTheme.typography.labelMedium)
+        Spacer(Modifier.height(4.dp))
+        LineChart(values = values, color = color, maxValue = 5f)
+    }
+}
+
+@Composable
+fun ChallengeCard(title: String, results: List<ChallengeResult>) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.height(8.dp))
+            if (results.size >= 2) {
+                LineChart(
+                    values = results.map { it.score }.reversed().toList(),
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            } else if (results.isNotEmpty()) {
+                Text("Ostatni wynik: ${results.first().score}", style = MaterialTheme.typography.bodyLarge)
+            } else {
+                Text("Brak danych. Zagraj, aby zobaczyć postępy.", style = MaterialTheme.typography.bodySmall)
             }
         }
     }
