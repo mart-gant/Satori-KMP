@@ -18,13 +18,15 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.gantlab.satori.db.Routine
 import com.gantlab.satori.db.RoutineTask
+import org.jetbrains.compose.resources.stringResource
+import satori.composeapp.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutineScreen(
     routines: List<Routine>,
     tasks: Map<Long, List<RoutineTask>>,
-    onAddRoutine: (String) -> Unit,
+    onAddRoutine: (String, String?) -> Unit,
     onDeleteRoutine: (Long) -> Unit,
     onAddTask: (Long, String, String?) -> Unit,
     onUpdateTaskStatus: (Long, Boolean) -> Unit,
@@ -33,6 +35,9 @@ fun RoutineScreen(
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
     var newRoutineTitle by remember { mutableStateOf("") }
+    var selectedEmoji by remember { mutableStateOf("📅") }
+    
+    val emojis = listOf("📅", "☀️", "🌙", "🧘", "💊", "💧", "🚶", "📚", "🍳")
     
     var editingTask by remember { mutableStateOf<RoutineTask?>(null) }
     var editTaskName by remember { mutableStateOf("") }
@@ -41,19 +46,19 @@ fun RoutineScreen(
     if (editingTask != null) {
         AlertDialog(
             onDismissRequest = { editingTask = null },
-            title = { Text("Edytuj zadanie") },
+            title = { Text(stringResource(Res.string.edit_task)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = editTaskName,
                         onValueChange = { editTaskName = it },
-                        label = { Text("Nazwa zadania") },
+                        label = { Text(stringResource(Res.string.task_name)) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
                         value = editTaskTime,
                         onValueChange = { editTaskTime = it },
-                        label = { Text("Godzina (np. 08:30)") },
+                        label = { Text(stringResource(Res.string.task_time)) },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -63,12 +68,12 @@ fun RoutineScreen(
                     editingTask?.let { onUpdateTaskName(it.id, editTaskName, editTaskTime.ifBlank { null }) }
                     editingTask = null
                 }) {
-                    Text("Zapisz")
+                    Text(stringResource(Res.string.save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { editingTask = null }) {
-                    Text("Anuluj")
+                    Text(stringResource(Res.string.cancel))
                 }
             }
         )
@@ -77,23 +82,23 @@ fun RoutineScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Twoje Rutyny") },
+                title = { Text(stringResource(Res.string.routines_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Wstecz")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 }
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Dodaj rutynę")
+                Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.add_routine))
             }
         }
     ) { padding ->
         if (routines.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("Brak zdefiniowanych rutyn. Dodaj pierwszą!", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(Res.string.no_routines), style = MaterialTheme.typography.bodyLarge)
             }
         } else {
             LazyColumn(
@@ -121,31 +126,60 @@ fun RoutineScreen(
         if (showAddDialog) {
             AlertDialog(
                 onDismissRequest = { showAddDialog = false },
-                title = { Text("Nowa Rutyna") },
+                title = { Text(stringResource(Res.string.new_routine)) },
                 text = {
-                    TextField(
-                        value = newRoutineTitle,
-                        onValueChange = { newRoutineTitle = it },
-                        placeholder = { Text("np. Poranny spokój") },
-                        singleLine = true
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        TextField(
+                            value = newRoutineTitle,
+                            onValueChange = { newRoutineTitle = it },
+                            placeholder = { Text(stringResource(Res.string.routine_placeholder)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        
+                        Text("Wybierz ikonę:", style = MaterialTheme.typography.labelMedium)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            emojis.take(5).forEach { emoji ->
+                                FilterChip(
+                                    selected = selectedEmoji == emoji,
+                                    onClick = { selectedEmoji = emoji },
+                                    label = { Text(emoji) }
+                                )
+                            }
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            emojis.drop(5).forEach { emoji ->
+                                FilterChip(
+                                    selected = selectedEmoji == emoji,
+                                    onClick = { selectedEmoji = emoji },
+                                    label = { Text(emoji) }
+                                )
+                            }
+                        }
+                    }
                 },
                 confirmButton = {
                     TextButton(
                         onClick = {
                             if (newRoutineTitle.isNotBlank()) {
-                                onAddRoutine(newRoutineTitle)
+                                onAddRoutine(newRoutineTitle, selectedEmoji)
                                 newRoutineTitle = ""
                                 showAddDialog = false
                             }
                         }
                     ) {
-                        Text("Dodaj")
+                        Text(stringResource(Res.string.add))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddDialog = false }) {
-                        Text("Anuluj")
+                        Text(stringResource(Res.string.cancel))
                     }
                 }
             )
@@ -175,7 +209,11 @@ fun RoutineItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(routine.title, style = MaterialTheme.typography.headlineSmall)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(routine.icon ?: "📅", style = MaterialTheme.typography.headlineSmall)
+                    Spacer(Modifier.width(8.dp))
+                    Text(routine.title, style = MaterialTheme.typography.headlineSmall)
+                }
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Default.Delete, contentDescription = "Usuń", tint = MaterialTheme.colorScheme.error)
                 }

@@ -91,6 +91,7 @@ class AppViewModel(
                 rank = calculateRank(best),
             ) 
         }
+        calculateDailySatoriScore()
     }
 
     private fun calculateRank(bestMs: Long?): String {
@@ -137,8 +138,8 @@ class AppViewModel(
         }
     }
 
-    fun addRoutine(title: String) {
-        repository.createRoutine(title)
+    fun addRoutine(title: String, icon: String?) {
+        repository.createRoutine(title, icon)
         loadRoutines()
     }
 
@@ -180,6 +181,7 @@ class AppViewModel(
         repository.updateTaskCompletion(taskId, isCompleted)
         loadRoutines()
         loadTaskCompletions()
+        calculateDailySatoriScore()
     }
 
     fun loadTaskCompletions() {
@@ -192,13 +194,46 @@ class AppViewModel(
 
     fun loadMoodHistory() {
         val history = repository.getMoodHistory()
-        _uiState.update { it.copy(moodHistory = history) }
+        val streak = calculateMoodStreak(history)
+        _uiState.update { it.copy(moodHistory = history, moodStreak = streak) }
+    }
+
+    private fun calculateMoodStreak(history: List<MoodEntry>): Int {
+        if (history.isEmpty()) return 0
+        
+        val timeZone = TimeZone.currentSystemDefault()
+        val today = Clock.System.now().toLocalDateTime(timeZone).date
+        
+        // Group by unique dates and sort descending
+        val uniqueDates = history
+            .map { Instant.fromEpochMilliseconds(it.timestamp).toLocalDateTime(timeZone).date }
+            .distinct()
+            .sortedDescending()
+
+        if (uniqueDates.isEmpty()) return 0
+
+        var streak = 0
+        var expectedDate = uniqueDates.first()
+        
+        // If the latest entry is older than yesterday, the streak is broken
+        if (expectedDate < today.minus(1, DateTimeUnit.DAY)) return 0
+
+        for (date in uniqueDates) {
+            if (date == expectedDate) {
+                streak++
+                expectedDate = date.minus(1, DateTimeUnit.DAY)
+            } else {
+                break
+            }
+        }
+        return streak
     }
 
     fun saveMood(mood: Long, energy: Long, note: String) {
         repository.insertMood(mood, energy, note)
         loadMoodHistory()
         updateRecommendations()
+        calculateDailySatoriScore()
         analytics.logEvent("mood_logged", mapOf("mood" to mood.toString(), "energy" to energy.toString()))
         
         // Sync with server
@@ -375,6 +410,32 @@ class AppViewModel(
         _uiState.update { it.copy(recommendations = recs) }
     }
 
+    private fun calculateDailySatoriScore() {
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        
+        // 1. Mood & Energy (max 30 pts)
+        val latestMood = _uiState.value.moodHistory.firstOrNull()
+        val moodDate = latestMood?.let { Instant.fromEpochMilliseconds(it.timestamp).toLocalDateTime(TimeZone.currentSystemDefault()).date }
+        val moodPoints = if (moodDate == today) {
+            ((latestMood!!.moodScore + latestMood.energyScore) * 3).toInt() // (5+5)*3 = 30
+        } else 0
+
+        // 2. Routines (max 40 pts)
+        val todayCompletions = _uiState.value.taskCompletions.filter { 
+            Instant.fromEpochMilliseconds(it.timestamp).toLocalDateTime(TimeZone.currentSystemDefault()).date == today 
+        }.size
+        val routinePoints = (todayCompletions * 10).coerceAtMost(40)
+
+        // 3. Activity (max 30 pts)
+        val testToday = _uiState.value.results.any { 
+            Instant.fromEpochMilliseconds(it.timestamp).toLocalDateTime(TimeZone.currentSystemDefault()).date == today 
+        }
+        val activityPoints = if (testToday) 30 else 0
+
+        val total = moodPoints + routinePoints + activityPoints
+        _uiState.update { it.copy(dailySatoriScore = total) }
+    }
+
     // --- Export ---
 
     fun getExportData(): String {
@@ -412,7 +473,9 @@ data class AppState(
     val bestResult: Long? = null,
     val averageResult: Long? = null,
     val rank: String = "Nowicjusz",
-    val aiInsight: String? = null
+    val aiInsight: String? = null,
+    val moodStreak: Int = 0,
+    val dailySatoriScore: Int = 0
 )
 
 data class Tip(val title: String, val description: String, val icon: String)

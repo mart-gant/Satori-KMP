@@ -57,6 +57,31 @@ fun HomeScreen(
             style = MaterialTheme.typography.headlineSmall
         )
 
+        Spacer(Modifier.height(16.dp))
+        
+        SatoriScoreCircle(uiState.dailySatoriScore)
+
+        if (uiState.moodStreak > 0) {
+            Spacer(Modifier.height(8.dp))
+            Surface(
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = MaterialTheme.shapes.extraLarge
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("🔥 ", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "${uiState.moodStreak} dni z rzędu!",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+        }
+
         Spacer(Modifier.height(24.dp))
 
         // REKOMENDACJE
@@ -241,6 +266,33 @@ fun HomeScreen(
         }
         
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+fun SatoriScoreCircle(score: Int) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(160.dp)) {
+        CircularProgressIndicator(
+            progress = { score / 100f },
+            modifier = Modifier.fillMaxSize(),
+            strokeWidth = 12.dp,
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = score.toString(),
+                style = MaterialTheme.typography.displayMedium,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = "Satori Score",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 

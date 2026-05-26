@@ -1,53 +1,64 @@
-# Satori - Reaction Time Trainer
+# Satori - Your Guide to Cognitive Wellbeing
 
-**Satori** is a multiplatform application (Kotlin Multiplatform) designed for testing and training reaction time. The project demonstrates the use of modern technologies in the Kotlin ecosystem, offering a consistent experience across Android, iOS, and Web platforms.
+**Satori** is an advanced multiplatform application (Kotlin Multiplatform) designed for neurodivergent individuals (ADHD, Autism) and anyone looking to train focus, monitor overstimulation, and build healthy routines.
 
-## 🚀 Features
+## 🌟 Key Features
 
-- **Reaction Test:** High-precision measurement of reaction time to visual stimuli.
-- **Ranking System:** Your results are evaluated on a scale ranging from "Sloth" to "Ninja".
-- **Result History:** View your progress and statistics in a dedicated reports module.
-- **Personalization:** Set your nickname and customize the app's appearance.
-- **Accessibility:** Support for high contrast mode and large font sizes.
-- **Multiplatform:** Shared business logic and UI (Compose Multiplatform) across multiple systems.
+### 🧠 Training & Diagnostics
+- **Reaction Test:** Precise measurement of reaction time to visual stimuli.
+- **Mind Challenges:** Cognitive games such as *Color Clash* (mindfulness) and *Memory Game* (working memory).
+- **Self-Assessment:** Daily monitoring of attention, memory, and executive functions.
+
+### 📊 Advanced Analytics & AI
+- **Gemini AI Analysis:** An intelligent assistant that analyzes your results, moods, and routines to provide personalized insights and advice.
+- **Circadian Performance:** Charts showing the hours when your brain works most effectively.
+- **Mood Map:** Visualization of the correlation between wellbeing and completed tasks.
+- **Data Export:** Ability to download full history (CSV) for analysis with a doctor or therapist.
+
+### 🧘 Overstimulation Management
+- **Breathing Tool:** An interactive animation guiding you through calming breathing sessions.
+- **Knowledge Base:** A collection of stress reduction techniques and tips for handling sensory overload.
+- **Routine System:** Habit building with personalized icons and notifications.
+
+### 🎨 Accessibility & UX
+- **Gamification:** A "Streak" system (days in a row) to motivate consistency.
+- **Daily Satori Score:** A holistic daily goal (0-100) based on your activities and wellbeing.
+- **Full Accessibility:** High contrast mode, large font support, and control over animations.
+- **Multiplatform:** A consistent experience on Android, iOS, and Web (Wasm).
 
 ## 🛠 Tech Stack
 
-- **Kotlin Multiplatform (KMP):** Code sharing across platforms.
-- **Compose Multiplatform:** Declarative UI for Android, iOS, and Web.
+- **Kotlin Multiplatform (KMP):** Sharing business logic and UI.
+- **Compose Multiplatform:** Declarative user interface.
+- **Gemini AI SDK:** Integration with Google's language model for intelligent analysis.
+- **SQLDelight:** Local SQLite database with static typing.
 - **Koin:** Dependency Injection.
-- **SQLDelight:** Multiplatform database support (SQLite).
-- **Ktor:** Network communication and server-side logic.
-- **KotlinX Coroutines & Serialization:** Asynchronous programming and data processing.
+- **Ktor:** Network communication and server synchronization.
+- **KotlinX Datetime:** Precise time and time zone management.
 
 ## 📁 Project Structure
 
-* [/composeApp](./composeApp/src) - Shared Compose Multiplatform UI code.
-* [/shared](./shared/src) - Shared business logic, database, and data models.
-* [/server](./server/src/main/kotlin) - Ktor-based server application.
-* [/iosApp](./iosApp/iosApp) - Entry point for the iOS platform (SwiftUI).
+* [/composeApp](./composeApp/src) - Shared Compose UI (Android, iOS, Web).
+* [/shared](./shared/src) - App Core: Database, AI Service, Repositories, Notifications.
+* [/server](./server/src/main/kotlin) - Ktor backend for data synchronization.
 
 ---
 
-## 🛠 Build and Run
+## 🛠 Installation & Running
 
 ### Android
 ```shell
 ./gradlew :composeApp:assembleDebug
 ```
 
-### Server (Ktor)
-```shell
-./gradlew :server:run
-```
-
-### Web (Wasm / JS)
-- **Wasm:** `./gradlew :composeApp:wasmJsBrowserDevelopmentRun`
-- **JS:** `./gradlew :composeApp:jsBrowserDevelopmentRun`
-
 ### iOS
-Open the [/iosApp](./iosApp) directory in Xcode or use the run configuration in Android Studio (requires macOS).
+Open the `/iosApp` directory in Xcode or run directly from Android Studio on macOS.
+
+### Web (Wasm)
+```shell
+./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+```
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html) and [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform).
+*The Satori project is constantly being developed to provide the best tools supporting digital and cognitive hygiene.*

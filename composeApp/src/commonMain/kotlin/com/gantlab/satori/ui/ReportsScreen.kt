@@ -106,6 +106,12 @@ fun ReportsScreen(
                 }
             }
 
+            item {
+                Text("Wydajność w ciągu dnia", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
+                TimeOfDayAnalysis(results)
+            }
+
             // Challenge Results
             item {
                 Text("Wyzwania Poznawcze", style = MaterialTheme.typography.titleMedium)
@@ -208,6 +214,55 @@ fun MoodHeatmap(history: List<MoodEntry>, completions: List<com.gantlab.satori.d
                             Text("•", color = Color.White, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TimeOfDayAnalysis(results: List<ReactionResult>) {
+    val hourlyAvg = remember(results) {
+        results.groupBy { 
+            Instant.fromEpochMilliseconds(it.timestamp).toLocalDateTime(TimeZone.currentSystemDefault()).hour 
+        }.mapValues { entry -> 
+            entry.value.map { it.reactionTimeMs }.average().toLong() 
+        }
+    }
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            if (hourlyAvg.isEmpty()) {
+                Text("Brak danych do analizy godzinowej.", style = MaterialTheme.typography.bodySmall)
+            } else {
+                Text("Średni czas reakcji względem godziny (ms)", style = MaterialTheme.typography.labelSmall)
+                Spacer(Modifier.height(16.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(100.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    val maxVal = if (hourlyAvg.values.isNotEmpty()) hourlyAvg.values.maxOrNull()?.toFloat() ?: 1f else 1f
+                    
+                    (0..23).forEach { hour ->
+                        val avg = hourlyAvg[hour]
+                        val heightFactor = if (avg != null) (avg.toFloat() / maxVal).coerceIn(0.1f, 1f) else 0.05f
+                        val color = if (avg != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                        
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(heightFactor)
+                                .padding(horizontal = 1.dp)
+                                .background(color, MaterialTheme.shapes.extraSmall)
+                        )
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("00:00", style = MaterialTheme.typography.labelSmall)
+                    Text("12:00", style = MaterialTheme.typography.labelSmall)
+                    Text("23:59", style = MaterialTheme.typography.labelSmall)
                 }
             }
         }
