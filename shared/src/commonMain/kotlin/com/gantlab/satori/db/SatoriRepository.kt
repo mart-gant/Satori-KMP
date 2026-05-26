@@ -46,6 +46,17 @@ open class SatoriRepository(private val database: SatoriDatabase) {
         dbQueries.updateMoodNote(note, id)
     }
 
+    open fun insertReactionWithTimestamp(timestamp: Long, reactionTimeMs: Long) {
+        dbQueries.insertResult(timestamp, reactionTimeMs)
+    }
+
+    open fun reactionExists(timestamp: Long): Boolean {
+        // Since SQLDelight queries are generated, I should check if I have a query for this.
+        // I'll assume I can use selectAllResults and filter for now if there is no specific query, 
+        // or I can add one to the .sq file. Let's check .sq file first.
+        return getAllResults().any { it.timestamp == timestamp }
+    }
+
     // --- Mind Challenges ---
 
     open fun insertChallengeResult(type: String, score: Long) {
@@ -58,6 +69,14 @@ open class SatoriRepository(private val database: SatoriDatabase) {
 
     open fun getChallengeHistory(type: String): List<ChallengeResult> {
         return dbQueries.getChallengeHistory(type).executeAsList()
+    }
+
+    open fun insertChallengeWithTimestamp(timestamp: Long, type: String, score: Long) {
+        dbQueries.insertChallengeResult(timestamp, type, score)
+    }
+
+    open fun challengeExists(timestamp: Long, type: String): Boolean {
+        return getChallengeHistory(type).any { it.timestamp == timestamp }
     }
 
     // --- Routines ---
@@ -124,6 +143,14 @@ open class SatoriRepository(private val database: SatoriDatabase) {
 
     open fun getSelfAssessmentHistory(): List<SelfAssessmentResult> {
         return dbQueries.getSelfAssessmentHistory().executeAsList()
+    }
+
+    open fun insertSelfAssessmentWithTimestamp(timestamp: Long, attention: Long, memory: Long, executive: Long) {
+        dbQueries.insertSelfAssessment(timestamp, attention, memory, executive)
+    }
+
+    open fun selfAssessmentExists(timestamp: Long): Boolean {
+        return getSelfAssessmentHistory().any { it.timestamp == timestamp }
     }
 
     // --- Data Export ---

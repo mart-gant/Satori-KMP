@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.gantlab.satori.AppViewModel
 import com.gantlab.satori.getPlatform
 import org.jetbrains.compose.resources.stringResource
@@ -35,243 +37,254 @@ fun HomeScreen(
     val viewModel: AppViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Spacer(Modifier.height(32.dp))
-        
-        Text(
-            text = stringResource(Res.string.app_name),
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Bold
-        )
-        
-        Text(
-            text = "Witaj, ${uiState.nickname.ifEmpty { "użytkowniku" }}",
-            style = MaterialTheme.typography.headlineSmall
-        )
-
-        Spacer(Modifier.height(16.dp))
-        
-        SatoriScoreCircle(uiState.dailySatoriScore)
-
-        if (uiState.moodStreak > 0) {
-            Spacer(Modifier.height(8.dp))
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shape = MaterialTheme.shapes.extraLarge
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("🔥 ", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        "${uiState.moodStreak} dni z rzędu!",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // REKOMENDACJE
-        if (uiState.recommendations.isNotEmpty()) {
-            Text("Dla Ciebie", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
-            Spacer(Modifier.height(8.dp))
-            uiState.recommendations.forEach { rec ->
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-                ) {
-                    Column(Modifier.padding(12.dp)) {
-                        Text(rec.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                        Text(rec.description, style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // KARTA RANGI
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
-            )
+    Scaffold(
+        modifier = Modifier.fillMaxSize()
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp).align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            Spacer(Modifier.height(16.dp))
+        
+            Text(
+                text = stringResource(Res.string.app_name),
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Text(
+                text = "Witaj, ${uiState.nickname.ifEmpty { "użytkowniku" }}",
+                style = MaterialTheme.typography.headlineSmall
+            )
+
+            Spacer(Modifier.height(16.dp))
+            
+            SatoriScoreCircle(uiState.dailySatoriScore)
+
+            if (uiState.moodStreak > 0) {
+                Spacer(Modifier.height(8.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = MaterialTheme.shapes.extraLarge
                 ) {
-                    Text(stringResource(Res.string.your_rank), style = MaterialTheme.typography.labelLarge)
-                    Text(
-                        text = uiState.rank,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                }
-                
-                if (uiState.bestResult != null) {
-                    val shareText = stringResource(Res.string.share_text)
-                        .replace("%d", uiState.bestResult.toString())
-                        .replace("%s", uiState.rank)
-                        
-                    IconButton(
-                        onClick = { getPlatform().shareText(shareText) },
-                        modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Share, contentDescription = stringResource(Res.string.share_rank))
+                        Text("🔥 ", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "${uiState.moodStreak} dni z rzędu!",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     }
                 }
             }
-        }
 
-        Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(24.dp))
 
-        // STATYSTYKI
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            StatCard(
-                label = stringResource(Res.string.best_result),
-                value = uiState.bestResult?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
-                modifier = Modifier.weight(1f)
-            )
-            StatCard(
-                label = stringResource(Res.string.average_result),
-                value = uiState.averageResult?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // CORE FEATURES
-        Text("Codzienność", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
-        Spacer(Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            OutlinedButton(
-                onClick = onNavigateToRoutines,
-                modifier = Modifier.weight(1f),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Text("Rutyny")
+            // REKOMENDACJE
+            if (uiState.recommendations.isNotEmpty()) {
+                Text("Dla Ciebie", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
+                Spacer(Modifier.height(8.dp))
+                uiState.recommendations.forEach { rec ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text(rec.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            Text(rec.description, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
             }
-            OutlinedButton(
-                onClick = onNavigateToMood,
-                modifier = Modifier.weight(1f),
-                shape = MaterialTheme.shapes.medium
+
+            Spacer(Modifier.height(16.dp))
+
+            // KARTA RANGI
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
             ) {
-                Text("Nastrój")
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(16.dp).align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(stringResource(Res.string.your_rank), style = MaterialTheme.typography.labelLarge)
+                        Text(
+                            text = uiState.rank,
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                    
+                    if (uiState.bestResult != null) {
+                        val shareText = stringResource(Res.string.share_text)
+                            .replace("%d", uiState.bestResult.toString())
+                            .replace("%s", uiState.rank)
+                            
+                        IconButton(
+                            onClick = { getPlatform().shareText(shareText) },
+                            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = stringResource(Res.string.share_rank))
+                        }
+                    }
+                }
             }
-        }
 
-        Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(16.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            OutlinedButton(
-                onClick = onNavigateToSelfAssessment,
-                modifier = Modifier.weight(1f),
-                shape = MaterialTheme.shapes.medium
+            // STATYSTYKI
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Samoocena")
+                StatCard(
+                    label = stringResource(Res.string.best_result),
+                    value = uiState.bestResult?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
+                    modifier = Modifier.weight(1f)
+                )
+                StatCard(
+                    label = stringResource(Res.string.average_result),
+                    value = uiState.averageResult?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
+                    modifier = Modifier.weight(1f)
+                )
             }
-            OutlinedButton(
-                onClick = onNavigateToScenarios,
-                modifier = Modifier.weight(1f),
-                shape = MaterialTheme.shapes.medium
+
+            Spacer(Modifier.height(24.dp))
+
+            // CORE FEATURES
+            Text("Codzienność", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Scenariusze")
+                OutlinedButton(
+                    onClick = onNavigateToRoutines,
+                    modifier = Modifier.weight(1f),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text("Rutyny")
+                }
+                OutlinedButton(
+                    onClick = onNavigateToMood,
+                    modifier = Modifier.weight(1f),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text("Nastrój")
+                }
             }
-        }
 
-        Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(12.dp))
 
-        // MIND CHALLENGES
-        Text("Wyzwania Umysłu", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
-        Spacer(Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onNavigateToSelfAssessment,
+                    modifier = Modifier.weight(1f),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text("Samoocena")
+                }
+                OutlinedButton(
+                    onClick = onNavigateToScenarios,
+                    modifier = Modifier.weight(1f),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text("Scenariusze")
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // MIND CHALLENGES
+            Text("Wyzwania Umysłu", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = onNavigateToTest,
+                    modifier = Modifier.weight(1f),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text("Reakcja")
+                }
+                Button(
+                    onClick = onNavigateToColorClash,
+                    modifier = Modifier.weight(1f),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text("Color Clash")
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
             Button(
-                onClick = onNavigateToTest,
-                modifier = Modifier.weight(1f),
+                onClick = onNavigateToMemoryGame,
+                modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium
             ) {
-                Text("Reakcja")
+                Text("Gra Pamięciowa")
             }
-            Button(
-                onClick = onNavigateToColorClash,
-                modifier = Modifier.weight(1f),
-                shape = MaterialTheme.shapes.medium
+
+            Spacer(Modifier.height(24.dp))
+
+            OutlinedButton(
+                onClick = onNavigateToTips,
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium,
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
             ) {
-                Text("Color Clash")
+                Text("🆘 SOS: Przebodźcowanie")
             }
-        }
 
-        Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(24.dp))
 
-        Button(
-            onClick = onNavigateToMemoryGame,
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium
-        ) {
-            Text("Gra Pamięciowa")
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        OutlinedButton(
-            onClick = onNavigateToTips,
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium,
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
-        ) {
-            Text("🆘 SOS: Przebodźcowanie")
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            TextButton(onClick = onNavigateToReports, modifier = Modifier.weight(1f)) {
-                Text(stringResource(Res.string.reports))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TextButton(onClick = onNavigateToReports, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(Res.string.reports))
+                }
+                TextButton(onClick = onNavigateToProfile, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(Res.string.profile))
+                }
             }
-            TextButton(onClick = onNavigateToProfile, modifier = Modifier.weight(1f)) {
-                Text(stringResource(Res.string.profile))
-            }
+            
+            Spacer(Modifier.height(80.dp))
         }
-        
-        Spacer(Modifier.height(24.dp))
     }
 }
 
 @Composable
 fun SatoriScoreCircle(score: Int) {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(160.dp)) {
+    Box(
+        contentAlignment = Alignment.Center, 
+        modifier = Modifier
+            .size(160.dp)
+            .semantics(mergeDescendants = true) {
+                contentDescription = "Twój dzisiejszy wynik Satori to $score na 100 punktów."
+            }
+    ) {
         CircularProgressIndicator(
             progress = { score / 100f },
             modifier = Modifier.fillMaxSize(),

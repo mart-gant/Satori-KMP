@@ -73,9 +73,17 @@ class AppViewModel(
     }
 
     fun saveReactionTime(timeMs: Long) {
-        repository.insertReactionResult(timeMs)
+        val timestamp = Clock.System.now().toEpochMilliseconds()
+        repository.insertReactionWithTimestamp(timestamp, timeMs)
         loadResults()
         analytics.logEvent(AnalyticsEvents.TEST_FINISHED, mapOf("result_ms" to timeMs.toString()))
+        
+        val token = settings.authToken
+        if (token != null) {
+            viewModelScope.launch {
+                api?.postReaction(token, timestamp, timeMs)
+            }
+        }
     }
 
     fun loadResults() {
@@ -276,26 +284,46 @@ class AppViewModel(
         val token = settings.authToken ?: return
         viewModelScope.launch {
             try {
-                val serverHistory = api?.getMoodHistory(token) ?: emptyList()
-                var addedCount = 0
-                
-                serverHistory.forEach { serverMood ->
-                    if (!repository.moodExists(serverMood.timestamp)) {
-                        repository.insertMoodWithTimestamp(
-                            timestamp = serverMood.timestamp,
-                            moodScore = serverMood.moodScore,
-                            energyScore = serverMood.energyScore,
-                            note = serverMood.note
-                        )
-                        addedCount++
+                // Sync Mood
+                val serverMood = api?.getMoodHistory(token) ?: emptyList()
+                serverMood.forEach { m ->
+                    if (!repository.moodExists(m.timestamp)) {
+                        repository.insertMoodWithTimestamp(m.timestamp, m.moodScore, m.energyScore, m.note)
                     }
                 }
                 
-                if (addedCount > 0) {
-                    loadMoodHistory()
-                    updateRecommendations()
+                // Sync Reactions
+                val serverReactions = api?.getReactions(token) ?: emptyList()
+                serverReactions.forEach { r ->
+                    if (!repository.reactionExists(r.timestamp)) {
+                        repository.insertReactionWithTimestamp(r.timestamp, r.reactionTimeMs)
+                    }
                 }
-                println("SYNC: Received ${serverHistory.size} entries, added $addedCount new ones to local DB.")
+                
+                // Sync Challenges
+                val serverChallenges = api?.getChallenges(token) ?: emptyList()
+                serverChallenges.forEach { c ->
+                    if (!repository.challengeExists(c.timestamp, c.challengeType)) {
+                        repository.insertChallengeWithTimestamp(c.timestamp, c.challengeType, c.score)
+                    }
+                }
+                
+                // Sync Self Assessment
+                val serverSelf = api?.getSelfAssessmentHistory(token) ?: emptyList()
+                serverSelf.forEach { s ->
+                    if (!repository.selfAssessmentExists(s.timestamp)) {
+                        repository.insertSelfAssessmentWithTimestamp(s.timestamp, s.attentionScore, s.memoryScore, s.executiveScore)
+                    }
+                }
+                
+                loadMoodHistory()
+                loadResults()
+                loadChallengeResults()
+                loadSelfAssessmentHistory()
+                updateRecommendations()
+                calculateDailySatoriScore()
+                
+                println("SYNC: Full synchronization completed.")
             } catch (e: Exception) {
                 println("SYNC ERROR: ${e.message}")
             }
@@ -323,9 +351,17 @@ class AppViewModel(
     }
 
     fun saveChallengeResult(type: String, score: Long) {
-        repository.insertChallengeResult(type, score)
+        val timestamp = Clock.System.now().toEpochMilliseconds()
+        repository.insertChallengeWithTimestamp(timestamp, type, score)
         loadChallengeResults()
         analytics.logEvent("challenge_finished", mapOf("type" to type, "score" to score.toString()))
+        
+        val token = settings.authToken
+        if (token != null) {
+            viewModelScope.launch {
+                api?.postChallenge(token, timestamp, type, score)
+            }
+        }
     }
 
     // --- Social Scenarios Logic ---
@@ -382,9 +418,18 @@ class AppViewModel(
     }
 
     fun saveSelfAssessment(attention: Long, memory: Long, executive: Long) {
-        repository.insertSelfAssessment(attention, memory, executive)
+        val timestamp = Clock.System.now().toEpochMilliseconds()
+        repository.insertSelfAssessmentWithTimestamp(timestamp, attention, memory, executive)
         loadSelfAssessmentHistory()
         updateRecommendations()
+        calculateDailySatoriScore()
+        
+        val token = settings.authToken
+        if (token != null) {
+            viewModelScope.launch {
+                api?.postSelfAssessment(token, timestamp, attention, memory, executive)
+            }
+        }
     }
 
     // --- Recommendations ---

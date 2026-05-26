@@ -11,11 +11,12 @@ import androidx.compose.ui.unit.dp
 fun OnboardingScreen(onComplete: (String) -> Unit) {
     var nickname by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
+    Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
         Text("Witaj w Satori", style = MaterialTheme.typography.headlineLarge)
         Spacer(Modifier.height(16.dp))
 
@@ -52,4 +53,5 @@ fun OnboardingScreen(onComplete: (String) -> Unit) {
             color = MaterialTheme.colorScheme.outline
         )
     }
+}
 }

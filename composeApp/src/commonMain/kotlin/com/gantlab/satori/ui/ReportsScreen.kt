@@ -17,6 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.gantlab.satori.db.ReactionResult
 import com.gantlab.satori.db.MoodEntry
 import com.gantlab.satori.db.ChallengeResult
@@ -96,7 +98,10 @@ fun ReportsScreen(
                 Spacer(Modifier.height(8.dp))
 
                 if (results.size >= 2) {
-                    LineChart(results.map { it.reactionTimeMs }.reversed().toList())
+                    LineChart(
+                        values = results.map { it.reactionTimeMs }.reversed().toList(),
+                        contentDescription = "Historia czasu reakcji. Twoja średnia to ${results.asSequence().map { it.reactionTimeMs }.average().toInt()} milisekund."
+                    )
                 } else {
                     Card(modifier = Modifier.fillMaxWidth().height(100.dp)) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
@@ -298,7 +303,8 @@ fun ChallengeCard(title: String, results: List<ChallengeResult>) {
             if (results.size >= 2) {
                 LineChart(
                     values = results.map { it.score }.reversed().toList(),
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
+                    contentDescription = "Postępy w grze $title. Ostatni wynik: ${results.first().score}"
                 )
             } else if (results.isNotEmpty()) {
                 Text("Ostatni wynik: ${results.first().score}", style = MaterialTheme.typography.bodyLarge)
@@ -351,13 +357,18 @@ fun ResultItem(result: ReactionResult) {
 private fun LineChart(
     values: List<Long>,
     color: Color = MaterialTheme.colorScheme.primary,
-    maxValue: Float? = null
+    maxValue: Float? = null,
+    contentDescription: String = "Wykres liniowy"
 ) {
     val minVal = 0f
     val maxVal = maxValue ?: values.maxOf { it }.toFloat()
     val range = (maxVal - minVal).coerceAtLeast(1f)
 
-    Canvas(modifier = Modifier.fillMaxWidth().height(150.dp)) {
+    Canvas(modifier = Modifier
+        .fillMaxWidth()
+        .height(150.dp)
+        .semantics { this.contentDescription = contentDescription }
+    ) {
         val (width, height) = size
         val path = Path()
 

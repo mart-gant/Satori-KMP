@@ -17,6 +17,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import com.gantlab.satori.Tip
 import kotlinx.coroutines.delay
 
@@ -120,7 +123,8 @@ fun BreathingExercise() {
             Text(
                 text = if (isBreathingIn) "Wdech..." else "Wydech...",
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
             )
             Text(
                 text = "Podążaj za ruchem okręgu",

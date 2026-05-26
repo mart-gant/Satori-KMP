@@ -66,4 +66,61 @@ class SatoriApiService {
             emptyList()
         }
     }
+
+    suspend fun postReaction(token: String, timestamp: Long, reactionTimeMs: Long): Boolean {
+        return try {
+            val response = client.post("$baseUrl/reaction") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+                contentType(ContentType.Application.Json)
+                setBody(ReactionResultRequest(timestamp, reactionTimeMs))
+            }
+            response.status == HttpStatusCode.Created
+        } catch (e: Exception) { false }
+    }
+
+    suspend fun getReactions(token: String): List<ReactionResultRequest> {
+        return try {
+            client.get("$baseUrl/reaction") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }.body()
+        } catch (e: Exception) { emptyList() }
+    }
+
+    suspend fun postChallenge(token: String, timestamp: Long, type: String, score: Long): Boolean {
+        return try {
+            val response = client.post("$baseUrl/challenge") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+                contentType(ContentType.Application.Json)
+                setBody(ChallengeResultRequest(timestamp, type, score))
+            }
+            response.status == HttpStatusCode.Created
+        } catch (e: Exception) { false }
+    }
+
+    suspend fun getChallenges(token: String): List<ChallengeResultRequest> {
+        return try {
+            client.get("$baseUrl/challenge") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }.body()
+        } catch (e: Exception) { emptyList() }
+    }
+
+    suspend fun postSelfAssessment(token: String, timestamp: Long, attention: Long, memory: Long, executive: Long): Boolean {
+        return try {
+            val response = client.post("$baseUrl/self-assessment") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+                contentType(ContentType.Application.Json)
+                setBody(SelfAssessmentRequest(timestamp, attention, memory, executive))
+            }
+            response.status == HttpStatusCode.Created
+        } catch (e: Exception) { false }
+    }
+
+    suspend fun getSelfAssessmentHistory(token: String): List<SelfAssessmentRequest> {
+        return try {
+            client.get("$baseUrl/self-assessment") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }.body()
+        } catch (e: Exception) { emptyList() }
+    }
 }

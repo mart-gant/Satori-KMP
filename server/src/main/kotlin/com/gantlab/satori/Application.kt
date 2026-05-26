@@ -2,12 +2,8 @@ package com.gantlab.satori
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.gantlab.satori.data.MoodTable
-import com.gantlab.satori.data.UserTable
-import com.gantlab.satori.network.AuthRequest
-import com.gantlab.satori.network.AuthResponse
-import com.gantlab.satori.network.MoodRequest
-import com.gantlab.satori.network.MoodResponse
+import com.gantlab.satori.data.*
+import com.gantlab.satori.network.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -31,7 +27,15 @@ private const val JWT_AUDIENCE = "satori-users"
 fun main() {
     Database.connect("jdbc:h2:file:./satori_db;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
     transaction {
-        SchemaUtils.create(UserTable, MoodTable)
+        SchemaUtils.create(
+            UserTable, 
+            MoodTable, 
+            ReactionTable, 
+            ChallengeTable, 
+            ServerRoutineTable, 
+            ServerRoutineTaskTable, 
+            SelfAssessmentTable
+        )
     }
 
     embeddedServer(Netty, port = SERVER_PORT, host = "0.0.0.0", module = Application::module)
@@ -136,6 +140,92 @@ fun Application.module() {
                                 it[MoodTable.moodScore],
                                 it[MoodTable.energyScore],
                                 it[MoodTable.note]
+                            )
+                        }
+                    }
+                    call.respond(history)
+                }
+            }
+
+            route("/reaction") {
+                post {
+                    val principal = call.principal<JWTPrincipal>()
+                    val userId = principal?.payload?.getClaim("userId")?.asLong() ?: return@post call.respond(HttpStatusCode.Unauthorized)
+                    val request = call.receive<ReactionResultRequest>()
+                    transaction {
+                        ReactionTable.insert {
+                            it[ReactionTable.userId] = userId
+                            it[ReactionTable.timestamp] = request.timestamp
+                            it[ReactionTable.reactionTimeMs] = request.reactionTimeMs
+                        }
+                    }
+                    call.respond(HttpStatusCode.Created)
+                }
+                get {
+                    val principal = call.principal<JWTPrincipal>()
+                    val userId = principal?.payload?.getClaim("userId")?.asLong() ?: return@get call.respond(HttpStatusCode.Unauthorized)
+                    val results = transaction {
+                        ReactionTable.selectAll().where { ReactionTable.userId eq userId }.map {
+                            ReactionResultRequest(it[ReactionTable.timestamp], it[ReactionTable.reactionTimeMs])
+                        }
+                    }
+                    call.respond(results)
+                }
+            }
+
+            route("/challenge") {
+                post {
+                    val principal = call.principal<JWTPrincipal>()
+                    val userId = principal?.payload?.getClaim("userId")?.asLong() ?: return@post call.respond(HttpStatusCode.Unauthorized)
+                    val request = call.receive<ChallengeResultRequest>()
+                    transaction {
+                        ChallengeTable.insert {
+                            it[ChallengeTable.userId] = userId
+                            it[ChallengeTable.timestamp] = request.timestamp
+                            it[ChallengeTable.challengeType] = request.challengeType
+                            it[ChallengeTable.score] = request.score
+                        }
+                    }
+                    call.respond(HttpStatusCode.Created)
+                }
+                get {
+                    val principal = call.principal<JWTPrincipal>()
+                    val userId = principal?.payload?.getClaim("userId")?.asLong() ?: return@get call.respond(HttpStatusCode.Unauthorized)
+                    val results = transaction {
+                        ChallengeTable.selectAll().where { ChallengeTable.userId eq userId }.map {
+                            ChallengeResultRequest(it[ChallengeTable.timestamp], it[ChallengeTable.challengeType], it[ChallengeTable.score])
+                        }
+                    }
+                    call.respond(results)
+                }
+            }
+
+            route("/self-assessment") {
+                post {
+                    val principal = call.principal<JWTPrincipal>()
+                    val userId = principal?.payload?.getClaim("userId")?.asLong() ?: return@post call.respond(HttpStatusCode.Unauthorized)
+                    val request = call.receive<SelfAssessmentRequest>()
+                    transaction {
+                        SelfAssessmentTable.insert {
+                            it[SelfAssessmentTable.userId] = userId
+                            it[SelfAssessmentTable.timestamp] = request.timestamp
+                            it[SelfAssessmentTable.attentionScore] = request.attentionScore
+                            it[SelfAssessmentTable.memoryScore] = request.memoryScore
+                            it[SelfAssessmentTable.executiveScore] = request.executiveScore
+                        }
+                    }
+                    call.respond(HttpStatusCode.Created)
+                }
+                get {
+                    val principal = call.principal<JWTPrincipal>()
+                    val userId = principal?.payload?.getClaim("userId")?.asLong() ?: return@get call.respond(HttpStatusCode.Unauthorized)
+                    val history = transaction {
+                        SelfAssessmentTable.selectAll().where { SelfAssessmentTable.userId eq userId }.map {
+                            SelfAssessmentRequest(
+                                it[SelfAssessmentTable.timestamp],
+                                it[SelfAssessmentTable.attentionScore],
+                                it[SelfAssessmentTable.memoryScore],
+                                it[SelfAssessmentTable.executiveScore]
                             )
                         }
                     }

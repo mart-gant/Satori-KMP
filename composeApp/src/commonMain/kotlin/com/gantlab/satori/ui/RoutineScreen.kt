@@ -140,25 +140,27 @@ fun RoutineScreen(
                         Text("Wybierz ikonę:", style = MaterialTheme.typography.labelMedium)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             emojis.take(5).forEach { emoji ->
                                 FilterChip(
                                     selected = selectedEmoji == emoji,
                                     onClick = { selectedEmoji = emoji },
-                                    label = { Text(emoji) }
+                                    label = { Text(emoji) },
+                                    modifier = Modifier.minimumInteractiveComponentSize()
                                 )
                             }
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             emojis.drop(5).forEach { emoji ->
                                 FilterChip(
                                     selected = selectedEmoji == emoji,
                                     onClick = { selectedEmoji = emoji },
-                                    label = { Text(emoji) }
+                                    label = { Text(emoji) },
+                                    modifier = Modifier.minimumInteractiveComponentSize()
                                 )
                             }
                         }
