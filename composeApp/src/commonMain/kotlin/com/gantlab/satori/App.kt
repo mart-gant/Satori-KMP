@@ -127,11 +127,16 @@ fun App(initialRoute: String? = null) {
                     highContrast = uiState.highContrast,
                     largeFont = uiState.largeFont,
                     animationsEnabled = uiState.animationsEnabled,
+                    language = uiState.language,
                     isLoggedIn = uiState.isLoggedIn,
                     onNicknameChange = viewModel::updateNickname,
                     onHighContrastChange = viewModel::toggleHighContrast,
                     onLargeFontChange = viewModel::toggleLargeFont,
                     onAnimationsChange = viewModel::toggleAnimations,
+                    onLanguageChange = { lang ->
+                        viewModel.updateLanguage(lang)
+                        getPlatform().setLanguage(lang)
+                    },
                     onNavigateToAbout = { navController.navigate(Routes.ABOUT) },
                     onNavigateToAuth = { navController.navigate(Routes.AUTH) },
                     onLogout = viewModel::logout,

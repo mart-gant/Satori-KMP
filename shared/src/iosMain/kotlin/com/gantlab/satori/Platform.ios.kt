@@ -23,6 +23,13 @@ class IOSPlatform: Platform {
             completion = null
         )
     }
+
+    override fun setLanguage(lang: String) {
+        // On iOS, changing language at runtime without app restart is tricky
+        // with standard localization. For Compose Resources, it might require
+        // a custom implementation of the string provider.
+        println("iOS: Language change requested to $lang (Requires app restart or custom provider)")
+    }
 }
 
 actual fun getPlatform(): Platform = IOSPlatform()

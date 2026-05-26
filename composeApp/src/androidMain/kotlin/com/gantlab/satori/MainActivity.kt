@@ -11,10 +11,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.gantlab.satori.settings.SettingsManager
 import com.gantlab.satori.ui.Routes
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        val settings = SettingsManager()
+        getPlatform().setLanguage(settings.language)
+
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 

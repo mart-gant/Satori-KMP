@@ -17,11 +17,13 @@ fun ProfileScreen(
     highContrast: Boolean,
     largeFont: Boolean,
     animationsEnabled: Boolean,
+    language: String,
     isLoggedIn: Boolean,
     onNicknameChange: (String) -> Unit,
     onHighContrastChange: (Boolean) -> Unit,
     onLargeFontChange: (Boolean) -> Unit,
     onAnimationsChange: (Boolean) -> Unit,
+    onLanguageChange: (String) -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateToAuth: () -> Unit,
     onLogout: () -> Unit,
@@ -77,6 +79,25 @@ fun ProfileScreen(
                 Text("Animacje włączone")
                 Spacer(Modifier.weight(1f))
                 Switch(checked = animationsEnabled, onCheckedChange = onAnimationsChange)
+            }
+
+            Spacer(Modifier.height(16.dp))
+            
+            Text("Język / Language", style = MaterialTheme.typography.labelMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = language == "pl",
+                    onClick = { onLanguageChange("pl") },
+                    label = { Text("Polski 🇵🇱") }
+                )
+                FilterChip(
+                    selected = language == "en",
+                    onClick = { onLanguageChange("en") },
+                    label = { Text("English 🇬🇧") }
+                )
             }
 
             Spacer(Modifier.height(24.dp))

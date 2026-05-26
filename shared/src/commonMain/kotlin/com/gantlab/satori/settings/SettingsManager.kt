@@ -26,6 +26,10 @@ class SettingsManager(private val settings: Settings = Settings()) {
         get() = settings["animations_enabled", true]
         set(value) { settings["animations_enabled"] = value }
 
+    var language: String
+        get() = settings["language", "pl"]
+        set(value) { settings["language"] = value }
+
     var authToken: String?
         get() = settings.getStringOrNull("auth_token")
         set(value) { 

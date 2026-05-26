@@ -34,6 +34,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.sqldelight.android.driver)
             implementation(libs.androidx.core.ktx)
+            implementation(libs.androidx.appcompat)
             implementation(libs.ktor.client.okhttp)
         }
         

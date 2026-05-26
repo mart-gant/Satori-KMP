@@ -42,7 +42,8 @@ class AppViewModel(
                 highContrast = settings.highContrast,
                 largeFont = settings.largeFont,
                 animationsEnabled = settings.animationsEnabled,
-                isLoggedIn = settings.authToken != null
+                isLoggedIn = settings.authToken != null,
+                language = settings.language
             )
         }
         loadResults()
@@ -131,6 +132,11 @@ class AppViewModel(
     fun toggleAnimations(enabled: Boolean) {
         settings.animationsEnabled = enabled
         _uiState.update { it.copy(animationsEnabled = enabled) }
+    }
+
+    fun updateLanguage(lang: String) {
+        settings.language = lang
+        _uiState.update { it.copy(language = lang) }
     }
 
     // --- Routines Logic ---
@@ -520,7 +526,8 @@ data class AppState(
     val rank: String = "Nowicjusz",
     val aiInsight: String? = null,
     val moodStreak: Int = 0,
-    val dailySatoriScore: Int = 0
+    val dailySatoriScore: Int = 0,
+    val language: String = "pl"
 )
 
 data class Tip(val title: String, val description: String, val icon: String)
