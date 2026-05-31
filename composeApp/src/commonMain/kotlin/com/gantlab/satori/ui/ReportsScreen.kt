@@ -42,7 +42,7 @@ fun ReportsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Twoje Wzorce") },
+                title = { Text(stringResource(Res.string.your_patterns)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
@@ -56,7 +56,7 @@ fun ReportsScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item {
-                Text("Analiza AI (Beta)", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.ai_analysis_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -64,17 +64,18 @@ fun ReportsScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         if (aiInsight == null) {
-                            Text("Pobierz inteligentną analizę Twoich danych, aby lepiej zrozumieć swoje wzorce.")
+                            Text(stringResource(Res.string.ai_analysis_desc))
                             Button(onClick = onGetAiInsight, modifier = Modifier.padding(top = 8.dp)) {
-                                Text("Generuj analizę Gemini")
+                                Text(stringResource(Res.string.ai_generate_btn))
                             }
                         } else {
+                            val generatingText = stringResource(Res.string.ai_generating)
                             Text(aiInsight, style = MaterialTheme.typography.bodyMedium)
-                            if (aiInsight == "Generowanie analizy...") {
+                            if (aiInsight == generatingText) {
                                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(top = 8.dp))
                             } else {
                                 Button(onClick = onGetAiInsight, modifier = Modifier.padding(top = 8.dp)) {
-                                    Text("Odśwież analizę")
+                                    Text(stringResource(Res.string.ai_refresh_btn))
                                 }
                             }
                         }
@@ -83,24 +84,25 @@ fun ReportsScreen(
             }
 
             item {
-                Text("Mapa Nastroju i Rutyn (7 dni)", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.mood_map_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
                 MoodHeatmap(moodHistory, taskCompletions)
                 Text(
-                    "Ciemniejszy zielony = lepszy nastrój. Kropka (•) = wykonana rutyna.",
+                    stringResource(Res.string.mood_map_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             item {
-                Text("Historia Reakcji", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.reaction_history_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
 
                 if (results.size >= 2) {
+                    val avg = results.asSequence().map { it.reactionTimeMs }.average().toInt()
                     LineChart(
                         values = results.map { it.reactionTimeMs }.reversed().toList(),
-                        contentDescription = "Historia czasu reakcji. Twoja średnia to ${results.asSequence().map { it.reactionTimeMs }.average().toInt()} milisekund."
+                        contentDescription = stringResource(Res.string.history_title) + " " + stringResource(Res.string.ms).replace("%d", avg.toString())
                     )
                 } else {
                     Card(modifier = Modifier.fillMaxWidth().height(100.dp)) {
@@ -112,29 +114,29 @@ fun ReportsScreen(
             }
 
             item {
-                Text("Wydajność w ciągu dnia", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.daily_performance_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
                 TimeOfDayAnalysis(results)
             }
 
             // Challenge Results
             item {
-                Text("Wyzwania Poznawcze", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.cognitive_challenges_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
                 
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    ChallengeCard("Color Clash", challengeResults["color_clash"] ?: emptyList())
-                    ChallengeCard("Memory Game", challengeResults["memory_game"] ?: emptyList())
+                    ChallengeCard(stringResource(Res.string.color_clash), challengeResults["color_clash"] ?: emptyList())
+                    ChallengeCard(stringResource(Res.string.memory_game), challengeResults["memory_game"] ?: emptyList())
                 }
             }
 
             item {
-                Text("Trendy Samooceny", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.self_assessment_trends_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
                 if (selfAssessmentHistory.size >= 2) {
                     SelfAssessmentTrends(selfAssessmentHistory)
                 } else {
-                    Text("Wypełnij samoocenę przynajmniej dwa razy, aby zobaczyć trendy.", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(Res.string.self_assessment_min_data), style = MaterialTheme.typography.bodySmall)
                 }
             }
 
@@ -238,9 +240,9 @@ fun TimeOfDayAnalysis(results: List<ReactionResult>) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             if (hourlyAvg.isEmpty()) {
-                Text("Brak danych do analizy godzinowej.", style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(Res.string.no_hourly_data), style = MaterialTheme.typography.bodySmall)
             } else {
-                Text("Średni czas reakcji względem godziny (ms)", style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(Res.string.avg_reaction_by_hour), style = MaterialTheme.typography.labelSmall)
                 Spacer(Modifier.height(16.dp))
                 
                 Row(
@@ -278,9 +280,9 @@ fun TimeOfDayAnalysis(results: List<ReactionResult>) {
 fun SelfAssessmentTrends(history: List<SelfAssessmentResult>) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            TrendItem("Uwaga", history.map { it.attentionScore }.reversed(), Color(0xFF2196F3))
-            TrendItem("Pamięć", history.map { it.memoryScore }.reversed(), Color(0xFF9C27B0))
-            TrendItem("Funkcje wykonawcze", history.map { it.executiveScore }.reversed(), Color(0xFFFF5722))
+            TrendItem(stringResource(Res.string.attention), history.map { it.attentionScore }.reversed(), Color(0xFF2196F3))
+            TrendItem(stringResource(Res.string.memory), history.map { it.memoryScore }.reversed(), Color(0xFF9C27B0))
+            TrendItem(stringResource(Res.string.executive_functions), history.map { it.executiveScore }.reversed(), Color(0xFFFF5722))
         }
     }
 }
@@ -296,6 +298,7 @@ fun TrendItem(label: String, values: List<Long>, color: Color) {
 
 @Composable
 fun ChallengeCard(title: String, results: List<ChallengeResult>) {
+    val progressDesc = stringResource(Res.string.game_progress_desc)
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(title, style = MaterialTheme.typography.titleSmall)
@@ -304,12 +307,12 @@ fun ChallengeCard(title: String, results: List<ChallengeResult>) {
                 LineChart(
                     values = results.map { it.score }.reversed().toList(),
                     color = MaterialTheme.colorScheme.secondary,
-                    contentDescription = "Postępy w grze $title. Ostatni wynik: ${results.first().score}"
+                    contentDescription = progressDesc.replace("%s", title).replace("%d", results.first().score.toString())
                 )
             } else if (results.isNotEmpty()) {
-                Text("Ostatni wynik: ${results.first().score}", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(Res.string.result_label).replace("%d", results.first().score.toString()), style = MaterialTheme.typography.bodyLarge)
             } else {
-                Text("Brak danych. Zagraj, aby zobaczyć postępy.", style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(Res.string.no_game_data), style = MaterialTheme.typography.bodySmall)
             }
         }
     }
@@ -329,7 +332,7 @@ fun ResultItem(result: ReactionResult) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(text = "Wynik: ${result.reactionTimeMs} ms", style = MaterialTheme.typography.bodyLarge)
+            Text(text = stringResource(Res.string.result_ms_label).replace("%d", result.reactionTimeMs.toString()), style = MaterialTheme.typography.bodyLarge)
             Text(text = dateString, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
 
@@ -342,9 +345,9 @@ fun ResultItem(result: ReactionResult) {
         Surface(color = qualityColor, shape = MaterialTheme.shapes.small) {
             Box(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                 Text(
-                    text = if (result.reactionTimeMs < 250) "Szybko" 
-                           else if (result.reactionTimeMs < 400) "Dobrze" 
-                           else "Wolno",
+                    text = if (result.reactionTimeMs < 250) stringResource(Res.string.fast)
+                           else if (result.reactionTimeMs < 400) stringResource(Res.string.good) 
+                           else stringResource(Res.string.slow),
                     color = Color.White,
                     style = MaterialTheme.typography.labelSmall
                 )

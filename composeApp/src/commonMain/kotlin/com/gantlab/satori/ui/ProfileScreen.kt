@@ -9,6 +9,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import satori.composeapp.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,12 +35,12 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profil") },
+                title = { Text(stringResource(Res.string.profile)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Powrót"
+                            contentDescription = stringResource(Res.string.back)
                         )
                     }
                 }
@@ -54,36 +56,36 @@ fun ProfileScreen(
             OutlinedTextField(
                 value = nickname,
                 onValueChange = onNicknameChange,
-                label = { Text("Pseudonim") },
+                label = { Text(stringResource(Res.string.nickname)) },
                 modifier = Modifier.fillMaxWidth()
             )
             
             Spacer(Modifier.height(24.dp))
             
-            Text("Dostępność", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(Res.string.accessibility), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(16.dp))
             
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Tryb wysokiego kontrastu")
+                Text(stringResource(Res.string.high_contrast))
                 Spacer(Modifier.weight(1f))
                 Switch(checked = highContrast, onCheckedChange = onHighContrastChange)
             }
             
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Większa czcionka")
+                Text(stringResource(Res.string.large_font))
                 Spacer(Modifier.weight(1f))
                 Switch(checked = largeFont, onCheckedChange = onLargeFontChange)
             }
             
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Animacje włączone")
+                Text(stringResource(Res.string.animations_enabled))
                 Spacer(Modifier.weight(1f))
                 Switch(checked = animationsEnabled, onCheckedChange = onAnimationsChange)
             }
 
             Spacer(Modifier.height(16.dp))
             
-            Text("Język / Language", style = MaterialTheme.typography.labelMedium)
+            Text(stringResource(Res.string.language_label), style = MaterialTheme.typography.labelMedium)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -102,27 +104,27 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(24.dp))
             
-            Text("Chmura i Synchronizacja", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(Res.string.cloud_sync_title), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             
             if (isLoggedIn) {
-                Text("Zalogowano jako: $nickname", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(Res.string.logged_in_as).replace("%s", nickname), style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(8.dp))
                 Button(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer)
                 ) {
-                    Text("Wyloguj się")
+                    Text(stringResource(Res.string.logout))
                 }
             } else {
-                Text("Twoje dane są zapisywane tylko lokalnie.", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(Res.string.local_data_only), style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(8.dp))
                 Button(
                     onClick = onNavigateToAuth,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Zaloguj lub Zarejestruj")
+                    Text(stringResource(Res.string.login_register_btn))
                 }
             }
 
@@ -132,7 +134,7 @@ fun ProfileScreen(
                 onClick = onExportData,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Eksportuj dane do CSV")
+                Text(stringResource(Res.string.export_csv_btn))
             }
 
             Spacer(Modifier.height(8.dp))
@@ -147,7 +149,7 @@ fun ProfileScreen(
             ) {
                 Icon(Icons.Default.Info, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("O aplikacji i licencje")
+                Text(stringResource(Res.string.about_app_btn))
             }
         }
     }

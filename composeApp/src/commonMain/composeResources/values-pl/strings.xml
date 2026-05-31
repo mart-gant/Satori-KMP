@@ -1,7 +1,20 @@
 <resources>
     <string name="app_name">Satori</string>
-    <string name="welcome_warrior">Witaj, %s!</string>
-    <string name="warrior_default">Użytkowniku</string>
+    <string name="welcome_user">Witaj, %s</string>
+    <string name="user_default">użytkowniku</string>
+    <string name="days_streak">%d dni z rzędu!</string>
+    <string name="for_you">Dla Ciebie</string>
+    <string name="daily_life">Codzienność</string>
+    <string name="routines">Rutyny</string>
+    <string name="mood">Nastrój</string>
+    <string name="self_assessment_label">Samoocena</string>
+    <string name="scenarios">Scenariusze</string>
+    <string name="mind_challenges">Wyzwania Umysłu</string>
+    <string name="reaction">Reakcja</string>
+    <string name="color_clash">Color Clash</string>
+    <string name="memory_game">Gra Pamięciowa</string>
+    <string name="sos_overstimulation">🆘 SOS: Przebodźcowanie</string>
+
     <string name="your_rank">Twoja Ranga</string>
     <string name="best_result">Najlepszy</string>
     <string name="average_result">Średnia</string>
@@ -17,7 +30,8 @@
     <string name="result_label">Wynik: %d ms</string>
     <string name="fast">SZYBKO</string>
     <string name="ok">OK</string>
-    <string name="slow">POWOLNIE</string>
+    <string name="good">DOBRZE</string>
+    <string name="slow">WOLNO</string>
     <string name="nickname">Pseudonim</string>
     <string name="accessibility">Dostępność</string>
     <string name="high_contrast">Tryb wysokiego kontrastu</string>
@@ -36,4 +50,92 @@
     <string name="edit_task">Edytuj zadanie</string>
     <string name="task_name">Nazwa zadania</string>
     <string name="task_time">Godzina (np. 08:30)</string>
+    <string name="select_icon">Wybierz ikonę:</string>
+    <string name="satori_score_desc">Twój dzisiejszy wynik Satori to %d na 100 punktów.</string>
+
+    <string name="your_patterns">Twoje Wzorce</string>
+    <string name="ai_analysis_title">Analiza AI (Beta)</string>
+    <string name="ai_analysis_desc">Pobierz inteligentną analizę Twoich danych, aby lepiej zrozumieć swoje wzorce.</string>
+    <string name="ai_generate_btn">Generuj analizę Gemini</string>
+    <string name="ai_refresh_btn">Odśwież analizę</string>
+    <string name="ai_generating">Generowanie analizy...</string>
+    <string name="mood_map_title">Mapa Nastroju i Rutyn (7 dni)</string>
+    <string name="mood_map_desc">Ciemniejszy zielony = lepszy nastrój. Kropka (•) = wykonana rutyna.</string>
+    <string name="reaction_history_title">Historia Reakcji</string>
+    <string name="daily_performance_title">Wydajność w ciągu dnia</string>
+    <string name="cognitive_challenges_title">Wyzwania Poznawcze</string>
+    <string name="self_assessment_trends_title">Trendy Samooceny</string>
+    <string name="self_assessment_min_data">Wypełnij samoocenę przynajmniej dwa razy, aby zobaczyć trendy.</string>
+    <string name="no_hourly_data">Brak danych do analizy godzinowej.</string>
+    <string name="avg_reaction_by_hour">Średni czas reakcji względem godziny (ms)</string>
+    <string name="attention">Uwaga</string>
+    <string name="memory">Pamięć</string>
+    <string name="executive_functions">Funkcje wykonawcze</string>
+    <string name="game_progress_desc">Postępy w grze %s. Ostatni wynik: %d</string>
+    <string name="no_game_data">Brak danych. Zagraj, aby zobaczyć postępy.</string>
+    <string name="result_ms_label">Wynik: %d ms</string>
+
+    <string name="calm_focus_title">Uspokojenie i Skupienie</string>
+    <string name="breathing_tool_title">Narzędzie: Świadomy Oddech</string>
+    <string name="follow_circle">Podążaj za ruchem okręgu</string>
+    <string name="inhale">Wdech...</string>
+    <string name="exhale">Wydech...</string>
+    <string name="tips_techniques_title">Porady i techniki</string>
+    <string name="overstimulation_desc">Czujesz przebodźcowaniu? Wypróbuj te techniki, aby odzyskać spokój.</string>
+
+    <string name="social_scenarios_title">Scenariusze Społeczne</string>
+    <string name="social_scenarios_desc">Przygotuj się na różne sytuacje krok po kroku.</string>
+    <string name="click_to_see_steps">Kliknij, aby zobaczyć kroki...</string>
+    <string name="language_label">Język / Language</string>
+    <string name="cloud_sync_title">Chmura i Synchronizacja</string>
+    <string name="logged_in_as">Zalogowano jako: %s</string>
+    <string name="logout">Wyloguj się</string>
+    <string name="local_data_only">Twoje dane są zapisywane tylko lokalnie.</string>
+    <string name="login_register_btn">Zaloguj lub Zarejestruj</string>
+    <string name="export_csv_btn">Eksportuj dane do CSV</string>
+    <string name="about_app_btn">O aplikacji i licencje</string>
+    <string name="about_title">O aplikacji i licencje</string>
+    <string name="app_full_name">Satori - Trener Czasu Reakcji</string>
+    <string name="version_label">Wersja 1.0.0</string>
+    <string name="oss_description">Ta aplikacja jest zbudowana z użyciem oprogramowania open-source. Poniżej znajduje się lista użytych bibliotek:</string>
+    <string name="by_author">autor: %s</string>
+    <string name="license_label">Licencja: %s</string>
+    <string name="copyright">© 2025 Satori App. Wszelkie prawa zastrzeżone.</string>
+
+    <string name="mood_energy_title">Nastrój i Energia</string>
+    <string name="how_feel_now">Jak się teraz czujesz?</string>
+    <string name="how_energy_now">Ile masz energii?</string>
+    <string name="note_optional">Notatka (opcjonalnie)</string>
+    <string name="save_state">Zapisz stan</string>
+    <string name="recent_entries">Ostatnie wpisy</string>
+    <string name="edit_note">Edytuj notatkę</string>
+    <string name="your_note">Twoja notatka</string>
+
+    <string name="reaction_test_title">Test czasu reakcji</string>
+    <string name="tap_to_start">Dotknij, aby zacząć</string>
+    <string name="wait_for_green">Czekaj na zielony...</string>
+    <string name="now_exclamation">TERAZ!</string>
+    <string name="too_soon_retry">Za wcześnie! Dotknij, aby spróbować ponownie.</string>
+    <string name="your_time_retry">Twój czas: %d ms\nDotknij, aby ponowić.</string>
+
+    <string name="color_clash_instruction">Wybierz kolor CZCIONKI, a nie treść słowa!</string>
+    <string name="start">Start</string>
+    <string name="time_s">Czas: %d s</string>
+    <string name="score_label">Wynik: %d</string>
+    <string name="time_up">Koniec czasu!</string>
+    <string name="your_score">Twój wynik: %d</string>
+    <string name="play_again">Zagraj ponownie</string>
+    <string name="red">Czerwony</string>
+    <string name="green">Zielony</string>
+    <string name="blue">Niebieski</string>
+    <string name="yellow">Żółty</string>
+
+    <string name="moves_score">Ruchy: %d | Wynik: %d</string>
+
+    <string name="cognitive_self_assessment_title">Samoocena Poznawcza</string>
+    <string name="assess_functioning_desc">Oceń swoje dzisiejsze funkcjonowanie w skali 1-5.</string>
+    <string name="attention_concentration">Uwaga i Koncentracja</string>
+    <string name="working_memory">Pamięć robocza</string>
+    <string name="executive_functions_planning">Funkcje wykonawcze (planowanie)</string>
+    <string name="save_self_assessment">Zapisz samoocenę</string>
 </resources>

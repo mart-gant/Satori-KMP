@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.gantlab.satori.db.SocialScenario
+import org.jetbrains.compose.resources.stringResource
+import satori.composeapp.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,10 +23,10 @@ fun SocialScenariosScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Scenariusze Społeczne") },
+                title = { Text(stringResource(Res.string.social_scenarios_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Wstecz")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 }
             )
@@ -37,7 +39,7 @@ fun SocialScenariosScreen(
         ) {
             item {
                 Text(
-                    "Przygotuj się na różne sytuacje krok po kroku.",
+                    stringResource(Res.string.social_scenarios_desc),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -77,7 +79,7 @@ fun ScenarioCard(scenario: SocialScenario) {
             )
             
             if (expanded) {
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 scenario.steps.split("\n").forEach { step ->
                     Text(
                         text = step,
@@ -87,7 +89,7 @@ fun ScenarioCard(scenario: SocialScenario) {
                 }
             } else {
                 Text(
-                    "Kliknij, aby zobaczyć kroki...",
+                    stringResource(Res.string.click_to_see_steps),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
                 )

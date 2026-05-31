@@ -1,7 +1,20 @@
 <resources>
     <string name="app_name">Satori</string>
-    <string name="welcome_warrior">Welcome, %s!</string>
-    <string name="warrior_default">User</string>
+    <string name="welcome_user">Hello, %s</string>
+    <string name="user_default">user</string>
+    <string name="days_streak">%d days in a row!</string>
+    <string name="for_you">For You</string>
+    <string name="daily_life">Daily Life</string>
+    <string name="routines">Routines</string>
+    <string name="mood">Mood</string>
+    <string name="self_assessment_label">Self-Assessment</string>
+    <string name="scenarios">Scenarios</string>
+    <string name="mind_challenges">Mind Challenges</string>
+    <string name="reaction">Reaction</string>
+    <string name="color_clash">Color Clash</string>
+    <string name="memory_game">Memory Game</string>
+    <string name="sos_overstimulation">🆘 SOS: Overstimulation</string>
+
     <string name="your_rank">Your Rank</string>
     <string name="best_result">Best</string>
     <string name="average_result">Average</string>
@@ -17,6 +30,7 @@
     <string name="result_label">Result: %d ms</string>
     <string name="fast">FAST</string>
     <string name="ok">OK</string>
+    <string name="good">GOOD</string>
     <string name="slow">SLOW</string>
     <string name="nickname">Nickname</string>
     <string name="accessibility">Accessibility</string>
@@ -36,4 +50,92 @@
     <string name="edit_task">Edit task</string>
     <string name="task_name">Task name</string>
     <string name="task_time">Time (e.g. 08:30)</string>
+    <string name="select_icon">Select icon:</string>
+    <string name="satori_score_desc">Your daily Satori score is %d out of 100 points.</string>
+
+    <string name="your_patterns">Your Patterns</string>
+    <string name="ai_analysis_title">AI Analysis (Beta)</string>
+    <string name="ai_analysis_desc">Get an intelligent analysis of your data to better understand your patterns.</string>
+    <string name="ai_generate_btn">Generate Gemini Analysis</string>
+    <string name="ai_refresh_btn">Refresh Analysis</string>
+    <string name="ai_generating">Generating analysis...</string>
+    <string name="mood_map_title">Mood and Routine Map (7 days)</string>
+    <string name="mood_map_desc">Darker green = better mood. Dot (•) = completed routine.</string>
+    <string name="reaction_history_title">Reaction History</string>
+    <string name="daily_performance_title">Daily Performance</string>
+    <string name="cognitive_challenges_title">Cognitive Challenges</string>
+    <string name="self_assessment_trends_title">Self-Assessment Trends</string>
+    <string name="self_assessment_min_data">Complete self-assessment at least twice to see trends.</string>
+    <string name="no_hourly_data">No data for hourly analysis.</string>
+    <string name="avg_reaction_by_hour">Average reaction time by hour (ms)</string>
+    <string name="attention">Attention</string>
+    <string name="memory">Memory</string>
+    <string name="executive_functions">Executive functions</string>
+    <string name="game_progress_desc">Progress in %s. Last result: %d</string>
+    <string name="no_game_data">No data. Play to see progress.</string>
+    <string name="result_ms_label">Result: %d ms</string>
+
+    <string name="calm_focus_title">Calm and Focus</string>
+    <string name="breathing_tool_title">Tool: Conscious Breath</string>
+    <string name="follow_circle">Follow the circle movement</string>
+    <string name="inhale">Inhale...</string>
+    <string name="exhale">Exhale...</string>
+    <string name="tips_techniques_title">Tips and techniques</string>
+    <string name="overstimulation_desc">Feeling overstimulated? Try these techniques to regain calm.</string>
+
+    <string name="social_scenarios_title">Social Scenarios</string>
+    <string name="social_scenarios_desc">Prepare for different situations step by step.</string>
+    <string name="click_to_see_steps">Click to see steps...</string>
+    <string name="language_label">Language / Język</string>
+    <string name="cloud_sync_title">Cloud and Sync</string>
+    <string name="logged_in_as">Logged in as: %s</string>
+    <string name="logout">Logout</string>
+    <string name="local_data_only">Your data is saved only locally.</string>
+    <string name="login_register_btn">Login or Register</string>
+    <string name="export_csv_btn">Export data to CSV</string>
+    <string name="about_app_btn">About app and licenses</string>
+    <string name="about_title">About &amp; Licenses</string>
+    <string name="app_full_name">Satori - Reaction Time Trainer</string>
+    <string name="version_label">Version 1.0.0</string>
+    <string name="oss_description">This application is built using open-source software. Below is a list of libraries used in this project:</string>
+    <string name="by_author">by %s</string>
+    <string name="license_label">License: %s</string>
+    <string name="copyright">© 2025 Satori App. All rights reserved.</string>
+
+    <string name="mood_energy_title">Mood and Energy</string>
+    <string name="how_feel_now">How do you feel now?</string>
+    <string name="how_energy_now">How much energy do you have?</string>
+    <string name="note_optional">Note (optional)</string>
+    <string name="save_state">Save state</string>
+    <string name="recent_entries">Recent entries</string>
+    <string name="edit_note">Edit note</string>
+    <string name="your_note">Your note</string>
+
+    <string name="reaction_test_title">Reaction Time Test</string>
+    <string name="tap_to_start">Tap to start</string>
+    <string name="wait_for_green">Wait for green...</string>
+    <string name="now_exclamation">NOW!</string>
+    <string name="too_soon_retry">Too soon! Tap to try again.</string>
+    <string name="your_time_retry">Your time: %d ms\nTap to retry.</string>
+
+    <string name="color_clash_instruction">Choose the FONT color, not the word content!</string>
+    <string name="start">Start</string>
+    <string name="time_s">Time: %d s</string>
+    <string name="score_label">Score: %d</string>
+    <string name="time_up">Time\'s up!</string>
+    <string name="your_score">Your score: %d</string>
+    <string name="play_again">Play again</string>
+    <string name="red">Red</string>
+    <string name="green">Green</string>
+    <string name="blue">Blue</string>
+    <string name="yellow">Yellow</string>
+
+    <string name="moves_score">Moves: %d | Score: %d</string>
+
+    <string name="cognitive_self_assessment_title">Cognitive Self-Assessment</string>
+    <string name="assess_functioning_desc">Rate your functioning today on a scale of 1-5.</string>
+    <string name="attention_concentration">Attention and Concentration</string>
+    <string name="working_memory">Working Memory</string>
+    <string name="executive_functions_planning">Executive Functions (planning)</string>
+    <string name="save_self_assessment">Save Self-Assessment</string>
 </resources>

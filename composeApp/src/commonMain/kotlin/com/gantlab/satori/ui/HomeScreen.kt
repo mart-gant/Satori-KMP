@@ -58,7 +58,8 @@ fun HomeScreen(
             )
             
             Text(
-                text = "Witaj, ${uiState.nickname.ifEmpty { "użytkowniku" }}",
+                text = stringResource(Res.string.welcome_user)
+                    .replace("%s", uiState.nickname.ifEmpty { stringResource(Res.string.user_default) }),
                 style = MaterialTheme.typography.headlineSmall
             )
 
@@ -78,7 +79,7 @@ fun HomeScreen(
                     ) {
                         Text("🔥 ", style = MaterialTheme.typography.titleMedium)
                         Text(
-                            "${uiState.moodStreak} dni z rzędu!",
+                            stringResource(Res.string.days_streak).replace("%d", uiState.moodStreak.toString()),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -91,7 +92,7 @@ fun HomeScreen(
 
             // REKOMENDACJE
             if (uiState.recommendations.isNotEmpty()) {
-                Text("Dla Ciebie", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
+                Text(stringResource(Res.string.for_you), style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
                 Spacer(Modifier.height(8.dp))
                 uiState.recommendations.forEach { rec ->
                     Card(
@@ -166,7 +167,7 @@ fun HomeScreen(
             Spacer(Modifier.height(24.dp))
 
             // CORE FEATURES
-            Text("Codzienność", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
+            Text(stringResource(Res.string.daily_life), style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
             Spacer(Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -177,14 +178,14 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f),
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Rutyny")
+                    Text(stringResource(Res.string.routines))
                 }
                 OutlinedButton(
                     onClick = onNavigateToMood,
                     modifier = Modifier.weight(1f),
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Nastrój")
+                    Text(stringResource(Res.string.mood))
                 }
             }
 
@@ -199,21 +200,21 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f),
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Samoocena")
+                    Text(stringResource(Res.string.self_assessment_label))
                 }
                 OutlinedButton(
                     onClick = onNavigateToScenarios,
                     modifier = Modifier.weight(1f),
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Scenariusze")
+                    Text(stringResource(Res.string.scenarios))
                 }
             }
 
             Spacer(Modifier.height(24.dp))
 
             // MIND CHALLENGES
-            Text("Wyzwania Umysłu", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
+            Text(stringResource(Res.string.mind_challenges), style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
             Spacer(Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -224,14 +225,14 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f),
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Reakcja")
+                    Text(stringResource(Res.string.reaction))
                 }
                 Button(
                     onClick = onNavigateToColorClash,
                     modifier = Modifier.weight(1f),
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Color Clash")
+                    Text(stringResource(Res.string.color_clash))
                 }
             }
 
@@ -242,7 +243,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium
             ) {
-                Text("Gra Pamięciowa")
+                Text(stringResource(Res.string.memory_game))
             }
 
             Spacer(Modifier.height(24.dp))
@@ -253,7 +254,7 @@ fun HomeScreen(
                 shape = MaterialTheme.shapes.medium,
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
             ) {
-                Text("🆘 SOS: Przebodźcowanie")
+                Text(stringResource(Res.string.sos_overstimulation))
             }
 
             Spacer(Modifier.height(24.dp))
@@ -277,12 +278,13 @@ fun HomeScreen(
 
 @Composable
 fun SatoriScoreCircle(score: Int) {
+    val description = stringResource(Res.string.satori_score_desc).replace("%d", score.toString())
     Box(
         contentAlignment = Alignment.Center, 
         modifier = Modifier
             .size(160.dp)
             .semantics(mergeDescendants = true) {
-                contentDescription = "Twój dzisiejszy wynik Satori to $score na 100 punktów."
+                contentDescription = description
             }
     ) {
         CircularProgressIndicator(

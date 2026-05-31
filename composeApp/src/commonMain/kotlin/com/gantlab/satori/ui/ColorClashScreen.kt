@@ -12,6 +12,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
+import satori.composeapp.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,10 +22,10 @@ fun ColorClashScreen(
     onBack: () -> Unit
 ) {
     val colors = listOf(
-        "Czerwony" to Color.Red,
-        "Zielony" to Color.Green,
-        "Niebieski" to Color.Blue,
-        "Żółty" to Color.Yellow
+        stringResource(Res.string.red) to Color.Red,
+        stringResource(Res.string.green) to Color.Green,
+        stringResource(Res.string.blue) to Color.Blue,
+        stringResource(Res.string.yellow) to Color.Yellow
     )
 
     var score by remember { mutableStateOf(0) }
@@ -45,10 +47,10 @@ fun ColorClashScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Color Clash") },
+                title = { Text(stringResource(Res.string.color_clash)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Wstecz")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 }
             )
@@ -60,14 +62,14 @@ fun ColorClashScreen(
             verticalArrangement = Arrangement.Center
         ) {
             if (!isPlaying && timeLeft == 30) {
-                Text("Wybierz kolor CZCIONKI, a nie treść słowa!", style = MaterialTheme.typography.headlineSmall)
+                Text(stringResource(Res.string.color_clash_instruction), style = MaterialTheme.typography.headlineSmall)
                 Spacer(Modifier.height(32.dp))
                 Button(onClick = { isPlaying = true }) {
-                    Text("Start")
+                    Text(stringResource(Res.string.start))
                 }
             } else if (isPlaying) {
-                Text("Czas: $timeLeft s", style = MaterialTheme.typography.titleLarge)
-                Text("Wynik: $score", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.time_s).replace("%d", timeLeft.toString()), style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(Res.string.score_label).replace("%d", score.toString()), style = MaterialTheme.typography.titleMedium)
                 
                 Spacer(Modifier.height(64.dp))
                 
@@ -97,20 +99,20 @@ fun ColorClashScreen(
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(containerColor = color)
                         ) {
-                            // Empty content or a dot
+                            // Empty content
                         }
                     }
                 }
             } else {
-                Text("Koniec czasu!", style = MaterialTheme.typography.headlineMedium)
-                Text("Twój wynik: $score", style = MaterialTheme.typography.headlineSmall)
+                Text(stringResource(Res.string.time_up), style = MaterialTheme.typography.headlineMedium)
+                Text(stringResource(Res.string.your_score).replace("%d", score.toString()), style = MaterialTheme.typography.headlineSmall)
                 Spacer(Modifier.height(32.dp))
                 Button(onClick = {
                     timeLeft = 30
                     score = 0
                     isPlaying = true
                 }) {
-                    Text("Zagraj ponownie")
+                    Text(stringResource(Res.string.play_again))
                 }
             }
         }

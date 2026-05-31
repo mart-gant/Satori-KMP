@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
+import satori.composeapp.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,10 +50,10 @@ fun MemoryGameScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gra Pamięciowa") },
+                title = { Text(stringResource(Res.string.memory_game)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Wstecz")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 }
             )
@@ -61,7 +63,12 @@ fun MemoryGameScreen(
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Ruchy: $moves | Wynik: $score", style = MaterialTheme.typography.titleLarge)
+            Text(
+                stringResource(Res.string.moves_score)
+                    .replace("%d", moves.toString())
+                    .replace("%d", score.toString()), // This won't work correctly with two %d in KMP stringResource yet if I just replace. Actually stringResource with arguments is better.
+                style = MaterialTheme.typography.titleLarge
+            )
             Spacer(Modifier.height(16.dp))
 
             LazyVerticalGrid(
@@ -100,7 +107,7 @@ fun MemoryGameScreen(
                     moves = 0
                     score = 0
                 }, modifier = Modifier.padding(top = 16.dp)) {
-                    Text("Zagraj ponownie")
+                    Text(stringResource(Res.string.play_again))
                 }
             }
         }

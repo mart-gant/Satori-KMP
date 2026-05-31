@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.gantlab.satori.utils.TimeUtils
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
+import satori.composeapp.generated.resources.*
 import kotlin.random.Random
 
 enum class GameState {
@@ -57,10 +59,10 @@ fun ReactionTestScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Test czasu reakcji") },
+                title = { Text(stringResource(Res.string.reaction_test_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Powrót")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 }
             )
@@ -89,14 +91,15 @@ fun ReactionTestScreen(
                 },
             contentAlignment = Alignment.Center
         ) {
+            val text = when (gameState) {
+                GameState.WAITING -> stringResource(Res.string.tap_to_start)
+                GameState.READY -> stringResource(Res.string.wait_for_green)
+                GameState.GO -> stringResource(Res.string.now_exclamation)
+                GameState.TOO_SOON -> stringResource(Res.string.too_soon_retry)
+                GameState.RESULT -> stringResource(Res.string.your_time_retry).replace("%d", reactionTime.toString())
+            }
             Text(
-                text = when (gameState) {
-                    GameState.WAITING -> "Dotknij, aby zacząć"
-                    GameState.READY -> "Czekaj na zielony..."
-                    GameState.GO -> "TERAZ!"
-                    GameState.TOO_SOON -> "Za wcześnie! Dotknij, aby spróbować ponownie."
-                    GameState.RESULT -> "Twój czas: ${reactionTime} ms\nDotknij, aby ponowić."
-                },
+                text = text,
                 color = if (backgroundColor == MaterialTheme.colorScheme.surface) MaterialTheme.colorScheme.onSurface else Color.White,
                 style = MaterialTheme.typography.headlineMedium
             )

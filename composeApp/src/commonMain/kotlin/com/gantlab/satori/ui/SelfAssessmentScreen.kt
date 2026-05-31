@@ -7,6 +7,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import satori.composeapp.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,10 +23,10 @@ fun SelfAssessmentScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Samoocena Poznawcza") },
+                title = { Text(stringResource(Res.string.cognitive_self_assessment_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Wstecz")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 }
             )
@@ -38,24 +40,24 @@ fun SelfAssessmentScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(
-                "Oceń swoje dzisiejsze funkcjonowanie w skali 1-5.",
+                stringResource(Res.string.assess_functioning_desc),
                 style = MaterialTheme.typography.bodyLarge
             )
 
             AssessmentSlider(
-                label = "Uwaga i Koncentracja",
+                label = stringResource(Res.string.attention_concentration),
                 value = attentionScore,
                 onValueChange = { attentionScore = it }
             )
 
             AssessmentSlider(
-                label = "Pamięć robocza",
+                label = stringResource(Res.string.working_memory),
                 value = memoryScore,
                 onValueChange = { memoryScore = it }
             )
 
             AssessmentSlider(
-                label = "Funkcje wykonawcze (planowanie)",
+                label = stringResource(Res.string.executive_functions_planning),
                 value = executiveScore,
                 onValueChange = { executiveScore = it }
             )
@@ -69,7 +71,7 @@ fun SelfAssessmentScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Zapisz samoocenę")
+                Text(stringResource(Res.string.save_self_assessment))
             }
         }
     }

@@ -13,15 +13,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.gantlab.satori.Tip
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
+import satori.composeapp.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,10 +33,10 @@ fun OverstimulationTipsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Uspokojenie i Skupienie") },
+                title = { Text(stringResource(Res.string.calm_focus_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Wstecz")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 }
             )
@@ -48,7 +49,7 @@ fun OverstimulationTipsScreen(
         ) {
             item {
                 Text(
-                    "Narzędzie: Świadomy Oddech",
+                    stringResource(Res.string.breathing_tool_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -58,7 +59,7 @@ fun OverstimulationTipsScreen(
 
             item {
                 Text(
-                    "Porady i techniki",
+                    stringResource(Res.string.tips_techniques_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 8.dp)
@@ -67,7 +68,7 @@ fun OverstimulationTipsScreen(
 
             item {
                 Text(
-                    "Czujesz przebodźcowanie? Wypróbuj te techniki, aby odzyskać spokój.",
+                    stringResource(Res.string.overstimulation_desc),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -88,6 +89,9 @@ fun BreathingExercise() {
         animationSpec = tween(durationMillis = 4000, easing = LinearOutSlowInEasing),
         label = "BreathingScale"
     )
+
+    val inhaleText = stringResource(Res.string.inhale)
+    val exhaleText = stringResource(Res.string.exhale)
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -121,13 +125,13 @@ fun BreathingExercise() {
             Spacer(Modifier.height(32.dp))
             
             Text(
-                text = if (isBreathingIn) "Wdech..." else "Wydech...",
+                text = if (isBreathingIn) inhaleText else exhaleText,
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
             )
             Text(
-                text = "Podążaj za ruchem okręgu",
+                text = stringResource(Res.string.follow_circle),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
             )

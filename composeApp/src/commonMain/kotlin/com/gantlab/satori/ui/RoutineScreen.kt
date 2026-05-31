@@ -137,7 +137,7 @@ fun RoutineScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
                         
-                        Text("Wybierz ikonę:", style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(Res.string.select_icon), style = MaterialTheme.typography.labelMedium)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween

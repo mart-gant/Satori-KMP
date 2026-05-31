@@ -11,13 +11,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gantlab.satori.db.MoodEntry
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
+import satori.composeapp.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,12 +38,12 @@ fun MoodLoggingScreen(
     if (editingEntry != null) {
         AlertDialog(
             onDismissRequest = { editingEntry = null },
-            title = { Text("Edytuj notatkę") },
+            title = { Text(stringResource(Res.string.edit_note)) },
             text = {
                 OutlinedTextField(
                     value = editNoteText,
                     onValueChange = { editNoteText = it },
-                    label = { Text("Twoja notatka") },
+                    label = { Text(stringResource(Res.string.your_note)) },
                     modifier = Modifier.fillMaxWidth()
                 )
             },
@@ -51,12 +52,12 @@ fun MoodLoggingScreen(
                     editingEntry?.let { onUpdateNote(it.id, editNoteText) }
                     editingEntry = null
                 }) {
-                    Text("Zapisz")
+                    Text(stringResource(Res.string.save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { editingEntry = null }) {
-                    Text("Anuluj")
+                    Text(stringResource(Res.string.cancel))
                 }
             }
         )
@@ -65,10 +66,10 @@ fun MoodLoggingScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nastrój i Energia") },
+                title = { Text(stringResource(Res.string.mood_energy_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Wstecz")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 }
             )
@@ -79,7 +80,7 @@ fun MoodLoggingScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item {
-                Text("Jak się teraz czujesz?", style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(Res.string.how_feel_now), style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(16.dp))
                 RatingSelector(
                     currentValue = selectedMood,
@@ -89,7 +90,7 @@ fun MoodLoggingScreen(
             }
 
             item {
-                Text("Ile masz energii?", style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(Res.string.how_energy_now), style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(16.dp))
                 RatingSelector(
                     currentValue = selectedEnergy,
@@ -102,7 +103,7 @@ fun MoodLoggingScreen(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("Notatka (opcjonalnie)") },
+                    label = { Text(stringResource(Res.string.note_optional)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3
                 )
@@ -116,14 +117,14 @@ fun MoodLoggingScreen(
                     },
                     modifier = Modifier.fillMaxWidth().height(56.dp)
                 ) {
-                    Text("Zapisz stan")
+                    Text(stringResource(Res.string.save_state))
                 }
             }
 
             item {
-                Divider()
+                HorizontalDivider()
                 Spacer(Modifier.height(16.dp))
-                Text("Ostatnie wpisy", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.recent_entries), style = MaterialTheme.typography.titleMedium)
             }
 
             items(history.take(10)) { entry ->
@@ -190,7 +191,7 @@ fun MoodHistoryItem(entry: MoodEntry, onEdit: () -> Unit) {
                     Text("E: ${getEnergyEmoji(entry.energyScore)}")
                     Spacer(Modifier.width(8.dp))
                     IconButton(onClick = onEdit, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edytuj", modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Edit, contentDescription = stringResource(Res.string.save), modifier = Modifier.size(16.dp))
                     }
                 }
             }

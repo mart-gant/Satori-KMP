@@ -10,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import satori.composeapp.generated.resources.*
 
 data class OpenSourceLibrary(
     val name: String,
@@ -35,10 +37,10 @@ fun AboutScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("About & Licenses") },
+                title = { Text(stringResource(Res.string.about_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 }
             )
@@ -53,17 +55,17 @@ fun AboutScreen(onBack: () -> Unit) {
         ) {
             item {
                 Text(
-                    text = "Satori - Reaction Time Trainer",
+                    text = stringResource(Res.string.app_full_name),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Version 1.0.0",
+                    text = stringResource(Res.string.version_label),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "This application is built using open-source software. Below is a list of libraries used in this project:",
+                    text = stringResource(Res.string.oss_description),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -82,7 +84,7 @@ fun AboutScreen(onBack: () -> Unit) {
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "by ${lib.author}",
+                            text = stringResource(Res.string.by_author).replace("%s", lib.author),
                             style = MaterialTheme.typography.bodySmall
                         )
                         Spacer(modifier = Modifier.height(4.dp))
@@ -92,7 +94,7 @@ fun AboutScreen(onBack: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "License: ${lib.license}",
+                            text = stringResource(Res.string.license_label).replace("%s", lib.license),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -103,7 +105,7 @@ fun AboutScreen(onBack: () -> Unit) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "© 2025 Satori App. All rights reserved.",
+                    text = stringResource(Res.string.copyright),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
                 )
