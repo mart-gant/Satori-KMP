@@ -1,0 +1,118 @@
+openapi: 3.0.0
+info:
+  title: Satori API
+  description: Backend API for Satori Mood and Health Tracking App
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+paths:
+  /register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '201':
+          description: User registered successfully
+        '409':
+          description: Username already exists
+  /login:
+    post:
+      summary: Authenticate user and get JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+  /mood:
+    get:
+      summary: Get mood history
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of mood entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MoodResponse'
+    post:
+      summary: Add a new mood entry
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoodRequest'
+      responses:
+        '200':
+          description: Mood added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MoodResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        username:
+          type: string
+    MoodRequest:
+      type: object
+      properties:
+        moodScore:
+          type: integer
+        energyScore:
+          type: integer
+        note:
+          type: string
+    MoodResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        timestamp:
+          type: integer
+        moodScore:
+          type: integer
+        energyScore:
+          type: integer
+        note:
+          type: string

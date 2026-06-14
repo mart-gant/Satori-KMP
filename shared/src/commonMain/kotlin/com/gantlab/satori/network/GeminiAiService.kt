@@ -1,44 +1,29 @@
 package com.gantlab.satori.network
 
+import com.gantlab.satori.settings.SettingsManager
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import kotlinx.serialization.Serializable
-
-@Serializable
-private data class GeminiRequest(val contents: List<Content>)
-
-@Serializable
-private data class Content(val parts: List<Part>)
-
-@Serializable
-private data class Part(val text: String)
-
-@Serializable
-private data class GeminiResponse(val candidates: List<Candidate>)
-
-@Serializable
-private data class Candidate(val content: Content)
 
 class GeminiAiService(
     private val httpClient: HttpClient,
-    private val apiKey: String
+    private val baseUrl: String,
+    private val settings: SettingsManager
 ) : AiService {
 
     override suspend fun getInsights(dataSummary: String): String {
-        if (apiKey.isEmpty()) return "Brak klucza API Gemini. Skonfiguruj go w AiService.kt, aby otrzymać inteligentną analizę."
+        val token = settings.authToken ?: return "Zaloguj się, aby otrzymać analizę AI."
 
         return try {
-            val response: GeminiResponse = httpClient.post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey") {
-                contentType(ContentType.Application.Json)
-                setBody(GeminiRequest(listOf(Content(listOf(Part(
-                    buildPrompt(dataSummary)
-                ))))))
+            val response: String = httpClient.post("$baseUrl/ai/insight") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+                contentType(ContentType.Text.Plain)
+                setBody(buildPrompt(dataSummary))
             }.body()
-            response.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: "Nie udało się uzyskać analizy."
+            response
         } catch (e: Exception) {
-            "Błąd połączenia z AI: ${e.message}"
+            "Błąd połączenia z serwerem AI: ${e.message}"
         }
     }
 

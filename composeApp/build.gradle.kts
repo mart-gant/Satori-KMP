@@ -39,7 +39,12 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
+            implementation(libs.koin.workmanager)
             implementation("androidx.work:work-runtime-ktx:2.11.2")
+            
+            // Firebase
+            implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
+            implementation(libs.firebase.messaging)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)

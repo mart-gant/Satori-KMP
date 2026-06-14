@@ -22,3 +22,19 @@ data class RoutineTaskResponse(val id: Long, val routineId: Long, val taskName: 
 
 @Serializable
 data class SelfAssessmentRequest(val timestamp: Long, val attentionScore: Long, val memoryScore: Long, val executiveScore: Long)
+
+@Serializable
+data class RoutineSyncRequest(
+    val id: Long, // Local DB ID
+    val title: String,
+    val icon: String?,
+    val isActive: Boolean,
+    val tasks: List<RoutineTaskSyncRequest>
+)
+
+@Serializable
+data class RoutineTaskSyncRequest(
+    val name: String,
+    val time: String?,
+    val isCompleted: Boolean
+)

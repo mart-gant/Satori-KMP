@@ -92,6 +92,8 @@
     <string name="logout">Logout</string>
     <string name="local_data_only">Your data is saved only locally.</string>
     <string name="login_register_btn">Login or Register</string>
+    <string name="sync_now_btn">Sync now</string>
+    <string name="syncing_label">Syncing...</string>
     <string name="export_csv_btn">Export data to CSV</string>
     <string name="about_app_btn">About app and licenses</string>
     <string name="about_title">About &amp; Licenses</string>

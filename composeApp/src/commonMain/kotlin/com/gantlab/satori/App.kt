@@ -5,7 +5,10 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -34,6 +37,7 @@ fun App(initialRoute: String? = null) {
 
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(initialRoute) {
         if (initialRoute != null && (settingsState.isOnboardingCompleted)) {
@@ -47,184 +51,230 @@ fun App(initialRoute: String? = null) {
     ) {
         val startDestination = if (settingsState.isOnboardingCompleted) Routes.HOME else Routes.ONBOARDING
 
-        NavHost(
-            navController = navController,
-            startDestination = startDestination,
-            enterTransition = { if (settingsState.animationsEnabled) fadeIn(tween(300)) else EnterTransition.None },
-            exitTransition = { if (settingsState.animationsEnabled) fadeOut(tween(300)) else ExitTransition.None }
-        ) {
-            composable(Routes.ONBOARDING) {
-                OnboardingScreen { nickname, aiConsent ->
-                    settingsViewModel.updateNickname(nickname)
-                    settingsViewModel.toggleAiConsent(aiConsent)
-                    settingsViewModel.completeOnboarding()
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.ONBOARDING) { inclusive = true }
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) }
+        ) { padding ->
+            NavHost(
+                navController = navController,
+                startDestination = startDestination,
+                modifier = Modifier.padding(padding),
+                enterTransition = { if (settingsState.animationsEnabled) fadeIn(tween(300)) else EnterTransition.None },
+                exitTransition = { if (settingsState.animationsEnabled) fadeOut(tween(300)) else ExitTransition.None }
+            ) {
+                composable(Routes.ONBOARDING) {
+                    OnboardingScreen { nickname, aiConsent ->
+                        settingsViewModel.updateNickname(nickname)
+                        settingsViewModel.toggleAiConsent(aiConsent)
+                        settingsViewModel.completeOnboarding()
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.ONBOARDING) { inclusive = true }
+                        }
                     }
                 }
-            }
-            composable(Routes.HOME) {
-                HomeScreen(
-                    onNavigateToTest = { navController.navigate(Routes.REACTION_TEST) },
-                    onNavigateToProfile = { navController.navigate(Routes.PROFILE) },
-                    onNavigateToReports = { navController.navigate(Routes.REPORTS) },
-                    onNavigateToRoutines = { navController.navigate(Routes.ROUTINES) },
-                    onNavigateToMood = { navController.navigate(Routes.MOOD_LOG) },
-                    onNavigateToTips = { navController.navigate(Routes.TIPS) },
-                    onNavigateToScenarios = { navController.navigate(Routes.SCENARIOS) },
-                    onNavigateToSelfAssessment = { navController.navigate(Routes.SELF_ASSESSMENT) },
-                    onNavigateToColorClash = { navController.navigate(Routes.COLOR_CLASH) },
-                    onNavigateToMemoryGame = { navController.navigate(Routes.MEMORY_GAME) }
-                )
-            }
-            composable(Routes.REACTION_TEST) {
-                ReactionTestScreen(
-                    onResult = { result ->
-                        reactionViewModel.saveReactionTime(result)
-                        dashboardViewModel.refreshDashboard()
-                    },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.COLOR_CLASH) {
-                ColorClashScreen(
-                    onResult = { score ->
-                        reactionViewModel.saveChallengeResult("color_clash", score)
-                    },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.MEMORY_GAME) {
-                MemoryGameScreen(
-                    onResult = { score ->
-                        reactionViewModel.saveChallengeResult("memory_game", score)
-                    },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.SELF_ASSESSMENT) {
-                SelfAssessmentScreen(
-                    onSave = { att, mem, exec ->
-                        assessmentViewModel.saveSelfAssessment(att, mem, exec)
-                        dashboardViewModel.refreshDashboard()
-                    },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.ROUTINES) {
-                val routineState by routineViewModel.uiState.collectAsState()
-                RoutineScreen(
-                    routines = routineState.routines,
-                    tasks = routineState.routineTasks,
-                    onAddRoutine = routineViewModel::addRoutine,
-                    onDeleteRoutine = routineViewModel::deleteRoutine,
-                    onAddTask = routineViewModel::addTaskToRoutine,
-                    onUpdateTaskStatus = { id, done ->
-                        routineViewModel.updateTaskCompletion(id, done)
-                        dashboardViewModel.refreshDashboard()
-                    },
-                    onUpdateTaskName = routineViewModel::updateTaskDetails,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.MOOD_LOG) {
-                val moodState by moodViewModel.uiState.collectAsState()
-                MoodLoggingScreen(
-                    history = moodState.moodHistory,
-                    onSaveMood = { mood, energy, note ->
-                        moodViewModel.saveMood(mood, energy, note)
-                        dashboardViewModel.refreshDashboard()
-                    },
-                    onUpdateNote = moodViewModel::updateMoodNote,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.TIPS) {
-                OverstimulationTipsScreen(
-                    tips = socialViewModel.getOverstimulationTips(),
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.SCENARIOS) {
-                val socialState by socialViewModel.uiState.collectAsState()
-                SocialScenariosScreen(
-                    scenarios = socialState.scenarios,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.PROFILE) {
-                ProfileScreen(
-                    nickname = settingsState.nickname,
-                    highContrast = settingsState.highContrast,
-                    largeFont = settingsState.largeFont,
-                    animationsEnabled = settingsState.animationsEnabled,
-                    aiConsentGranted = settingsState.aiConsentGranted,
-                    language = settingsState.language,
-                    isLoggedIn = authState.isLoggedIn,
-                    onNicknameChange = settingsViewModel::updateNickname,
-                    onHighContrastChange = settingsViewModel::toggleHighContrast,
-                    onLargeFontChange = settingsViewModel::toggleLargeFont,
-                    onAnimationsChange = settingsViewModel::toggleAnimations,
-                    onAiConsentChange = settingsViewModel::toggleAiConsent,
-                    onLanguageChange = { lang ->
-                        settingsViewModel.updateLanguage(lang)
-                        getPlatform().setLanguage(lang)
-                    },
-                    onNavigateToAbout = { navController.navigate(Routes.ABOUT) },
-                    onNavigateToAuth = { navController.navigate(Routes.AUTH) },
-                    onNavigateToDebug = { navController.navigate(Routes.DEBUG) },
-                    onLogout = authViewModel::logout,
-                    onExportData = {
-                        scope.launch {
-                            val csvData = settingsViewModel.getExportData()
-                            getPlatform().shareText(csvData)
-                        }
-                    },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.REPORTS) {
-                val moodState by moodViewModel.uiState.collectAsState()
-                val routineState by routineViewModel.uiState.collectAsState()
-                val assessState by assessmentViewModel.uiState.collectAsState()
-                val dashState by dashboardViewModel.uiState.collectAsState()
-                ReportsScreen(
-                    results = reactionState.results,
-                    averageMs = reactionState.averageMs,
-                    challengeResults = reactionState.challengeResults,
-                    selfAssessmentHistory = assessState.selfAssessmentHistory,
-                    reportsData = reactionState.reportsData,
-                    aiInsight = dashState.aiInsight,
-                    onGetAiInsight = dashboardViewModel::getAiInsights,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.ABOUT) {
-                AboutScreen(
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.AUTH) {
-                AuthScreen(
-                    onLogin = { u, p ->
-                        authViewModel.login(u, p) { success ->
-                            if (success) {
-                                navController.popBackStack()
-                                dashboardViewModel.refreshDashboard()
+                composable(Routes.HOME) {
+                    HomeScreen(
+                        onNavigateToTest = { navController.navigate(Routes.REACTION_TEST) },
+                        onNavigateToProfile = { navController.navigate(Routes.PROFILE) },
+                        onNavigateToReports = { navController.navigate(Routes.REPORTS) },
+                        onNavigateToRoutines = { navController.navigate(Routes.ROUTINES) },
+                        onNavigateToMood = { navController.navigate(Routes.MOOD_LOG) },
+                        onNavigateToTips = { navController.navigate(Routes.TIPS) },
+                        onNavigateToScenarios = { navController.navigate(Routes.SCENARIOS) },
+                        onNavigateToSelfAssessment = { navController.navigate(Routes.SELF_ASSESSMENT) },
+                        onNavigateToColorClash = { navController.navigate(Routes.COLOR_CLASH) },
+                        onNavigateToMemoryGame = { navController.navigate(Routes.MEMORY_GAME) }
+                    )
+                }
+                composable(Routes.REACTION_TEST) {
+                    ReactionTestScreen(
+                        onResult = { result ->
+                            reactionViewModel.saveReactionTime(result)
+                            dashboardViewModel.refreshDashboard()
+                        },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.COLOR_CLASH) {
+                    ColorClashScreen(
+                        onResult = { score ->
+                            reactionViewModel.saveChallengeResult("color_clash", score)
+                        },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.MEMORY_GAME) {
+                    MemoryGameScreen(
+                        onResult = { score ->
+                            reactionViewModel.saveChallengeResult("memory_game", score)
+                        },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.SELF_ASSESSMENT) {
+                    SelfAssessmentScreen(
+                        onSave = { att, mem, exec ->
+                            assessmentViewModel.saveSelfAssessment(att, mem, exec)
+                            dashboardViewModel.refreshDashboard()
+                        },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.ROUTINES) {
+                    val routineState by routineViewModel.uiState.collectAsState()
+                    RoutineScreen(
+                        routines = routineState.routines,
+                        tasks = routineState.routineTasks,
+                        onAddRoutine = routineViewModel::addRoutine,
+                        onDeleteRoutine = routineViewModel::deleteRoutine,
+                        onAddTask = routineViewModel::addTaskToRoutine,
+                        onUpdateTaskStatus = { id, done ->
+                            routineViewModel.updateTaskCompletion(id, done)
+                            dashboardViewModel.refreshDashboard()
+                        },
+                        onUpdateTaskName = routineViewModel::updateTaskDetails,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.MOOD_LOG) {
+                    val moodState by moodViewModel.uiState.collectAsState()
+                    MoodLoggingScreen(
+                        history = moodState.moodHistory,
+                        onSaveMood = { mood, energy, note ->
+                            moodViewModel.saveMood(mood, energy, note)
+                            dashboardViewModel.refreshDashboard()
+                        },
+                        onUpdateNote = moodViewModel::updateMoodNote,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.TIPS) {
+                    OverstimulationTipsScreen(
+                        tips = socialViewModel.getOverstimulationTips(),
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.SCENARIOS) {
+                    val socialState by socialViewModel.uiState.collectAsState()
+                    SocialScenariosScreen(
+                        scenarios = socialState.scenarios,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.PROFILE) {
+                    val isSyncing by settingsViewModel.isSyncing.collectAsState()
+                    ProfileScreen(
+                        nickname = settingsState.nickname,
+                        highContrast = settingsState.highContrast,
+                        largeFont = settingsState.largeFont,
+                        animationsEnabled = settingsState.animationsEnabled,
+                        aiConsentGranted = settingsState.aiConsentGranted,
+                        language = settingsState.language,
+                        isLoggedIn = authState.isLoggedIn,
+                        isSyncing = isSyncing,
+                        onNicknameChange = settingsViewModel::updateNickname,
+                        onHighContrastChange = settingsViewModel::toggleHighContrast,
+                        onLargeFontChange = settingsViewModel::toggleLargeFont,
+                        onAnimationsChange = settingsViewModel::toggleAnimations,
+                        onAiConsentChange = settingsViewModel::toggleAiConsent,
+                        onLanguageChange = { lang ->
+                            settingsViewModel.updateLanguage(lang)
+                            getPlatform().setLanguage(lang)
+                        },
+                        onNavigateToAbout = { navController.navigate(Routes.ABOUT) },
+                        onNavigateToAuth = { navController.navigate(Routes.AUTH) },
+                        onNavigateToDebug = { navController.navigate(Routes.DEBUG) },
+                        onLogout = authViewModel::logout,
+                        onSyncNow = {
+                            settingsViewModel.syncNow()
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Synchronizacja zakończona")
                             }
-                        }
-                    },
-                    onRegister = { u, p ->
-                        authViewModel.register(u, p) { success -> }
-                    },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.DEBUG) {
-                DebugScreen(
-                    viewModel = databaseViewModel,
-                    onBack = { navController.popBackStack() }
-                )
+                        },
+                        onDeleteAccount = {
+                            authViewModel.deleteAccount { success ->
+                                if (success) {
+                                    navController.popBackStack()
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Konto zostało usunięte")
+                                    }
+                                } else {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Błąd podczas usuwania konta")
+                                    }
+                                }
+                            }
+                        },
+                        onExportData = {
+                            scope.launch {
+                                val csvData = settingsViewModel.getExportData()
+                                getPlatform().shareText(csvData)
+                            }
+                        },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.REPORTS) {
+                    val moodState by moodViewModel.uiState.collectAsState()
+                    val routineState by routineViewModel.uiState.collectAsState()
+                    val assessState by assessmentViewModel.uiState.collectAsState()
+                    val dashState by dashboardViewModel.uiState.collectAsState()
+                    ReportsScreen(
+                        results = reactionState.results,
+                        averageMs = reactionState.averageMs,
+                        challengeResults = reactionState.challengeResults,
+                        selfAssessmentHistory = assessState.selfAssessmentHistory,
+                        reportsData = reactionState.reportsData,
+                        aiInsight = dashState.aiInsight,
+                        onGetAiInsight = {
+                            dashboardViewModel.getAiInsights()
+                        },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.ABOUT) {
+                    AboutScreen(
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.AUTH) {
+                    AuthScreen(
+                        onLogin = { u, p ->
+                            authViewModel.login(u, p) { success ->
+                                if (success) {
+                                    navController.popBackStack()
+                                    dashboardViewModel.refreshDashboard()
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Zalogowano pomyślnie")
+                                    }
+                                } else {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Błąd logowania")
+                                    }
+                                }
+                            }
+                        },
+                        onRegister = { u, p ->
+                            authViewModel.register(u, p) { success -> 
+                                if (success) {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Konto utworzone. Możesz się zalogować.")
+                                    }
+                                } else {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Błąd rejestracji. Użytkownik może już istnieć.")
+                                    }
+                                }
+                            }
+                        },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.DEBUG) {
+                    DebugScreen(
+                        viewModel = databaseViewModel,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
             }
         }
     }

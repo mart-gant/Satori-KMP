@@ -17,6 +17,8 @@ kotlin = "2.1.21"
 ktor = "3.0.1"
 exposed = "0.56.0"
 h2 = "2.3.232"
+postgresql = "42.7.4"
+hikaricp = "5.1.0"
 logback = "1.5.11"
 material3 = "1.7.3"
 sqlDelight = "2.0.2"
@@ -54,8 +56,16 @@ ktor-serverTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.re
 ktor-serverContentNegotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
 ktor-serverAuth = { module = "io.ktor:ktor-server-auth-jvm", version.ref = "ktor" }
 ktor-serverAuthJwt = { module = "io.ktor:ktor-server-auth-jwt-jvm", version.ref = "ktor" }
+ktor-serverStatusPages = { module = "io.ktor:ktor-server-status-pages-jvm", version.ref = "ktor" }
+ktor-serverRequestValidation = { module = "io.ktor:ktor-server-request-validation-jvm", version.ref = "ktor" }
+ktor-serverSwagger = { module = "io.ktor:ktor-server-swagger-jvm", version.ref = "ktor" }
+ktor-serverOpenapi = { module = "io.ktor:ktor-server-openapi-jvm", version.ref = "ktor" }
 ktor-serializationKotlinxJson = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 bcrypt = { module = "org.mindrot:jbcrypt", version = "0.4" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version = "33.6.0" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging-ktx" }
+google-auth = { module = "com.google.api-client:google-api-client", version = "2.4.1" }
+google-auth-gson = { module = "com.google.http-client:google-http-client-gson", version = "1.44.1" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
@@ -64,6 +74,8 @@ ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", vers
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
+postgres = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 
 sqldelight-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqlDelight" }
 sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqlDelight" }
@@ -76,6 +88,8 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koin" }
+koinServer = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

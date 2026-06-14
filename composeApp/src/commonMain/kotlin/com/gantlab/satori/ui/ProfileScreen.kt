@@ -22,6 +22,7 @@ fun ProfileScreen(
     aiConsentGranted: Boolean,
     language: String,
     isLoggedIn: Boolean,
+    isSyncing: Boolean = false,
     onNicknameChange: (String) -> Unit,
     onHighContrastChange: (Boolean) -> Unit,
     onLargeFontChange: (Boolean) -> Unit,
@@ -32,6 +33,8 @@ fun ProfileScreen(
     onNavigateToAuth: () -> Unit,
     onNavigateToDebug: () -> Unit = {},
     onLogout: () -> Unit,
+    onSyncNow: () -> Unit = {},
+    onDeleteAccount: () -> Unit = {},
     onExportData: () -> Unit,
     onBack: () -> Unit,
 ) {
@@ -129,6 +132,27 @@ fun ProfileScreen(
             if (isLoggedIn) {
                 Text(stringResource(Res.string.logged_in_as).replace("%s", nickname), style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(8.dp))
+                
+                Button(
+                    onClick = onSyncNow,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isSyncing
+                ) {
+                    if (isSyncing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(Res.string.syncing_label))
+                    } else {
+                        Text(stringResource(Res.string.sync_now_btn))
+                    }
+                }
+                
+                Spacer(Modifier.height(8.dp))
+
                 Button(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(),
@@ -178,6 +202,16 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Panel Debuggera", color = MaterialTheme.colorScheme.outline)
+            }
+
+            if (isLoggedIn) {
+                Spacer(Modifier.height(8.dp))
+                TextButton(
+                    onClick = onDeleteAccount,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Usuń konto i dane z chmury", color = MaterialTheme.colorScheme.error)
+                }
             }
         }
     }

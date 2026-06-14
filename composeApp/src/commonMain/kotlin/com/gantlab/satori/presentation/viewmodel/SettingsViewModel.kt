@@ -5,16 +5,20 @@ import androidx.lifecycle.viewModelScope
 import com.gantlab.satori.Analytics
 import com.gantlab.satori.domain.model.UserPreferences
 import com.gantlab.satori.domain.usecase.ExportDataUseCase
+import com.gantlab.satori.domain.usecase.SyncDataUseCase
 import com.gantlab.satori.settings.SettingsManager
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val settings: SettingsManager,
     private val exportDataUseCase: ExportDataUseCase,
+    private val syncDataUseCase: SyncDataUseCase,
     private val analytics: Analytics
 ) : ViewModel() {
+
+    private val _isSyncing = MutableStateFlow(false)
+    val isSyncing = _isSyncing.asStateFlow()
 
     val uiState: StateFlow<UserPreferences> = settings.preferences
         .stateIn(
@@ -22,6 +26,15 @@ class SettingsViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = settings.preferences.value
         )
+
+    fun syncNow() {
+        viewModelScope.launch {
+            _isSyncing.value = true
+            syncDataUseCase()
+            _isSyncing.value = false
+            analytics.logEvent("manual_sync_triggered")
+        }
+    }
 
     fun completeOnboarding() {
         settings.isOnboardingCompleted = true

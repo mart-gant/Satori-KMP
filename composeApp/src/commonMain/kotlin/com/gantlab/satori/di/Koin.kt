@@ -48,7 +48,8 @@ val commonModule: Module = module {
     single<SettingsManager> { SettingsManager() }
     single<NotificationManager> { DummyNotificationManager() }
     single<SatoriApiService> { SatoriApiService(get(), get(org.koin.core.qualifier.named("baseUrl"))) }
-    single<AiService> { GeminiAiService(get(), "") }
+    single<com.gantlab.satori.network.SyncManager> { com.gantlab.satori.network.SyncManager(get(), get(), get()) }
+    single<AiService> { GeminiAiService(get(), get(org.koin.core.qualifier.named("baseUrl")), get()) }
     single<SatoriRepository> { 
         SatoriRepository(
             database = com.gantlab.satori.db.SatoriDatabase(get<DriverFactory>().createDriver()),

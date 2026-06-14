@@ -92,6 +92,8 @@
     <string name="logout">Wyloguj się</string>
     <string name="local_data_only">Twoje dane są zapisywane tylko lokalnie.</string>
     <string name="login_register_btn">Zaloguj lub Zarejestruj</string>
+    <string name="sync_now_btn">Synchronizuj teraz</string>
+    <string name="syncing_label">Synchronizacja...</string>
     <string name="export_csv_btn">Eksportuj dane do CSV</string>
     <string name="about_app_btn">O aplikacji i licencje</string>
     <string name="about_title">O aplikacji i licencje</string>

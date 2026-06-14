@@ -49,6 +49,17 @@ class AuthViewModel(
         _uiState.update { it.copy(isLoggedIn = false) }
     }
 
+    fun deleteAccount(onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val token = settings.authToken ?: return@launch
+            val success = api?.deleteAccount(token) ?: false
+            if (success) {
+                logout()
+            }
+            onResult(success)
+        }
+    }
+
     fun syncData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isSyncing = true) }

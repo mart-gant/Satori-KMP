@@ -22,11 +22,16 @@ object ChallengeTable : Table("ChallengeResult") {
 
 object ServerRoutineTable : Table("Routine") {
     val id = long("id").autoIncrement()
+    val externalId = long("externalId") 
     val userId = long("userId").references(UserTable.id, onDelete = ReferenceOption.CASCADE)
     val title = varchar("title", 100)
     val icon = varchar("icon", 10).nullable()
     val isActive = bool("isActive").default(true)
     override val primaryKey = PrimaryKey(id)
+    
+    init {
+        uniqueIndex(userId, externalId)
+    }
 }
 
 object ServerRoutineTaskTable : Table("RoutineTask") {
@@ -36,6 +41,10 @@ object ServerRoutineTaskTable : Table("RoutineTask") {
     val scheduledTime = varchar("scheduledTime", 10).nullable()
     val isCompletedToday = bool("isCompletedToday").default(false)
     override val primaryKey = PrimaryKey(id)
+
+    init {
+        uniqueIndex(routineId, taskName)
+    }
 }
 
 object SelfAssessmentTable : Table("SelfAssessmentResult") {

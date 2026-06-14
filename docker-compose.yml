@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: satori-db
+    restart: always
+    environment:
+      POSTGRES_USER: satori_admin
+      POSTGRES_PASSWORD: satori_password
+      POSTGRES_DB: satori_production
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U satori_admin -d satori_production"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build: .
+    container_name: satori-server
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - JDBC_URL=jdbc:postgresql://db:5432/satori_production
+      - DB_DRIVER=org.postgresql.Driver
+      - DB_USER=satori_admin
+      - DB_PASSWORD=satori_password
+      - JWT_SECRET=change-this-to-something-very-secret-on-production
+      - JWT_ISSUER=http://localhost:8080/
+      - JWT_AUDIENCE=satori-users
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

@@ -24,6 +24,20 @@ class SatoriApiService(
         }.body()
     }
 
+    suspend fun googleLogin(idToken: String): AuthResponse? = safeApiCall {
+        client.post("$baseUrl/google-login") {
+            contentType(ContentType.Text.Plain)
+            setBody(idToken)
+        }.body()
+    }
+
+    suspend fun deleteAccount(token: String): Boolean = safeApiCall {
+        val response = client.delete("$baseUrl/delete-account") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
+        response.status == HttpStatusCode.OK
+    } ?: false
+
     suspend fun postMood(token: String, moodScore: Long, energyScore: Long, note: String?): MoodResponse? = safeApiCall {
         client.post("$baseUrl/mood") {
             header(HttpHeaders.Authorization, "Bearer $token")
@@ -81,6 +95,14 @@ class SatoriApiService(
         client.get("$baseUrl/self-assessment") {
             header(HttpHeaders.Authorization, "Bearer $token")
         }.body<List<SelfAssessmentRequest>>()
+    } ?: emptyList()
+
+    suspend fun syncRoutines(token: String, routines: List<RoutineSyncRequest>): List<RoutineSyncRequest> = safeApiCall {
+        client.post("$baseUrl/routines/sync") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody(routines)
+        }.body<List<RoutineSyncRequest>>()
     } ?: emptyList()
 
     private suspend fun <T> safeApiCall(block: suspend () -> T): T? {
