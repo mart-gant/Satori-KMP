@@ -11,13 +11,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.gantlab.satori.settings.SettingsManager
 import com.gantlab.satori.ui.Routes
+import com.gantlab.satori.worker.SyncWorker
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val settings = SettingsManager()
         getPlatform().setLanguage(settings.language)
+
+        val syncRequest = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES)
+            .build()
+
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            "SatoriSyncWork",
+            ExistingPeriodicWorkPolicy.KEEP,
+            syncRequest
+        )
 
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)

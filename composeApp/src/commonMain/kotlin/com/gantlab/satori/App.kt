@@ -9,41 +9,59 @@ import androidx.compose.runtime.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.gantlab.satori.presentation.viewmodel.*
 import com.gantlab.satori.ui.*
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun App(initialRoute: String? = null) {
-    val viewModel: AppViewModel = koinViewModel()
-    val uiState by viewModel.uiState.collectAsState()
+    val settingsViewModel: SettingsViewModel = koinViewModel()
+    val settingsState by settingsViewModel.uiState.collectAsState()
+    
+    val authViewModel: AuthViewModel = koinViewModel()
+    val authState by authViewModel.uiState.collectAsState()
+
+    val reactionViewModel: ReactionViewModel = koinViewModel()
+    val reactionState by reactionViewModel.uiState.collectAsState()
+    
+    val moodViewModel: MoodViewModel = koinViewModel()
+    val routineViewModel: RoutineViewModel = koinViewModel()
+    val socialViewModel: SocialViewModel = koinViewModel()
+    val assessmentViewModel: AssessmentViewModel = koinViewModel()
+    val dashboardViewModel: DashboardViewModel = koinViewModel()
+    val databaseViewModel: DatabaseViewModel = koinViewModel()
+
     val navController = rememberNavController()
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(initialRoute) {
-        if (initialRoute != null && uiState.isOnboardingCompleted) {
+        if (initialRoute != null && (settingsState.isOnboardingCompleted)) {
             navController.navigate(initialRoute)
         }
     }
 
     SatoriTheme(
-        highContrast = uiState.highContrast,
-        largeFont = uiState.largeFont
+        highContrast = settingsState.highContrast,
+        largeFont = settingsState.largeFont,
     ) {
-        val startDestination = if (uiState.isOnboardingCompleted) Routes.HOME else Routes.ONBOARDING
+        val startDestination = if (settingsState.isOnboardingCompleted) Routes.HOME else Routes.ONBOARDING
 
         NavHost(
             navController = navController,
             startDestination = startDestination,
-            enterTransition = { if (uiState.animationsEnabled) fadeIn(tween(300)) else EnterTransition.None },
-            exitTransition = { if (uiState.animationsEnabled) fadeOut(tween(300)) else ExitTransition.None }
+            enterTransition = { if (settingsState.animationsEnabled) fadeIn(tween(300)) else EnterTransition.None },
+            exitTransition = { if (settingsState.animationsEnabled) fadeOut(tween(300)) else ExitTransition.None }
         ) {
             composable(Routes.ONBOARDING) {
-                OnboardingScreen(onComplete = { nickname ->
-                    viewModel.updateNickname(nickname)
-                    viewModel.completeOnboarding()
+                OnboardingScreen { nickname, aiConsent ->
+                    settingsViewModel.updateNickname(nickname)
+                    settingsViewModel.toggleAiConsent(aiConsent)
+                    settingsViewModel.completeOnboarding()
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.ONBOARDING) { inclusive = true }
                     }
-                })
+                }
             }
             composable(Routes.HOME) {
                 HomeScreen(
@@ -62,7 +80,8 @@ fun App(initialRoute: String? = null) {
             composable(Routes.REACTION_TEST) {
                 ReactionTestScreen(
                     onResult = { result ->
-                        viewModel.saveReactionTime(result)
+                        reactionViewModel.saveReactionTime(result)
+                        dashboardViewModel.refreshDashboard()
                     },
                     onBack = { navController.popBackStack() }
                 )
@@ -70,7 +89,7 @@ fun App(initialRoute: String? = null) {
             composable(Routes.COLOR_CLASH) {
                 ColorClashScreen(
                     onResult = { score ->
-                        viewModel.saveChallengeResult("color_clash", score)
+                        reactionViewModel.saveChallengeResult("color_clash", score)
                     },
                     onBack = { navController.popBackStack() }
                 )
@@ -78,84 +97,105 @@ fun App(initialRoute: String? = null) {
             composable(Routes.MEMORY_GAME) {
                 MemoryGameScreen(
                     onResult = { score ->
-                        viewModel.saveChallengeResult("memory_game", score)
+                        reactionViewModel.saveChallengeResult("memory_game", score)
                     },
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.SELF_ASSESSMENT) {
                 SelfAssessmentScreen(
-                    onSave = viewModel::saveSelfAssessment,
+                    onSave = { att, mem, exec ->
+                        assessmentViewModel.saveSelfAssessment(att, mem, exec)
+                        dashboardViewModel.refreshDashboard()
+                    },
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.ROUTINES) {
+                val routineState by routineViewModel.uiState.collectAsState()
                 RoutineScreen(
-                    routines = uiState.routines,
-                    tasks = uiState.routineTasks,
-                    onAddRoutine = viewModel::addRoutine,
-                    onDeleteRoutine = viewModel::deleteRoutine,
-                    onAddTask = viewModel::addTaskToRoutine,
-                    onUpdateTaskStatus = viewModel::updateTaskCompletion,
-                    onUpdateTaskName = viewModel::updateTaskDetails,
+                    routines = routineState.routines,
+                    tasks = routineState.routineTasks,
+                    onAddRoutine = routineViewModel::addRoutine,
+                    onDeleteRoutine = routineViewModel::deleteRoutine,
+                    onAddTask = routineViewModel::addTaskToRoutine,
+                    onUpdateTaskStatus = { id, done ->
+                        routineViewModel.updateTaskCompletion(id, done)
+                        dashboardViewModel.refreshDashboard()
+                    },
+                    onUpdateTaskName = routineViewModel::updateTaskDetails,
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.MOOD_LOG) {
+                val moodState by moodViewModel.uiState.collectAsState()
                 MoodLoggingScreen(
-                    history = uiState.moodHistory,
-                    onSaveMood = viewModel::saveMood,
-                    onUpdateNote = viewModel::updateMoodNote,
+                    history = moodState.moodHistory,
+                    onSaveMood = { mood, energy, note ->
+                        moodViewModel.saveMood(mood, energy, note)
+                        dashboardViewModel.refreshDashboard()
+                    },
+                    onUpdateNote = moodViewModel::updateMoodNote,
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.TIPS) {
                 OverstimulationTipsScreen(
-                    tips = viewModel.getOverstimulationTips(),
+                    tips = socialViewModel.getOverstimulationTips(),
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.SCENARIOS) {
+                val socialState by socialViewModel.uiState.collectAsState()
                 SocialScenariosScreen(
-                    scenarios = uiState.scenarios,
+                    scenarios = socialState.scenarios,
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.PROFILE) {
                 ProfileScreen(
-                    nickname = uiState.nickname,
-                    highContrast = uiState.highContrast,
-                    largeFont = uiState.largeFont,
-                    animationsEnabled = uiState.animationsEnabled,
-                    language = uiState.language,
-                    isLoggedIn = uiState.isLoggedIn,
-                    onNicknameChange = viewModel::updateNickname,
-                    onHighContrastChange = viewModel::toggleHighContrast,
-                    onLargeFontChange = viewModel::toggleLargeFont,
-                    onAnimationsChange = viewModel::toggleAnimations,
+                    nickname = settingsState.nickname,
+                    highContrast = settingsState.highContrast,
+                    largeFont = settingsState.largeFont,
+                    animationsEnabled = settingsState.animationsEnabled,
+                    aiConsentGranted = settingsState.aiConsentGranted,
+                    language = settingsState.language,
+                    isLoggedIn = authState.isLoggedIn,
+                    onNicknameChange = settingsViewModel::updateNickname,
+                    onHighContrastChange = settingsViewModel::toggleHighContrast,
+                    onLargeFontChange = settingsViewModel::toggleLargeFont,
+                    onAnimationsChange = settingsViewModel::toggleAnimations,
+                    onAiConsentChange = settingsViewModel::toggleAiConsent,
                     onLanguageChange = { lang ->
-                        viewModel.updateLanguage(lang)
+                        settingsViewModel.updateLanguage(lang)
                         getPlatform().setLanguage(lang)
                     },
                     onNavigateToAbout = { navController.navigate(Routes.ABOUT) },
                     onNavigateToAuth = { navController.navigate(Routes.AUTH) },
-                    onLogout = viewModel::logout,
+                    onNavigateToDebug = { navController.navigate(Routes.DEBUG) },
+                    onLogout = authViewModel::logout,
                     onExportData = {
-                        val csvData = viewModel.getExportData()
-                        getPlatform().shareText(csvData) // Or use a more specific file sharing if available
+                        scope.launch {
+                            val csvData = settingsViewModel.getExportData()
+                            getPlatform().shareText(csvData)
+                        }
                     },
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.REPORTS) {
+                val moodState by moodViewModel.uiState.collectAsState()
+                val routineState by routineViewModel.uiState.collectAsState()
+                val assessState by assessmentViewModel.uiState.collectAsState()
+                val dashState by dashboardViewModel.uiState.collectAsState()
                 ReportsScreen(
-                    results = uiState.results,
-                    moodHistory = uiState.moodHistory,
-                    taskCompletions = uiState.taskCompletions,
-                    challengeResults = uiState.challengeResults,
-                    selfAssessmentHistory = uiState.selfAssessmentHistory,
-                    aiInsight = uiState.aiInsight,
-                    onGetAiInsight = viewModel::getAiInsights,
+                    results = reactionState.results,
+                    averageMs = reactionState.averageMs,
+                    challengeResults = reactionState.challengeResults,
+                    selfAssessmentHistory = assessState.selfAssessmentHistory,
+                    reportsData = reactionState.reportsData,
+                    aiInsight = dashState.aiInsight,
+                    onGetAiInsight = dashboardViewModel::getAiInsights,
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -167,16 +207,22 @@ fun App(initialRoute: String? = null) {
             composable(Routes.AUTH) {
                 AuthScreen(
                     onLogin = { u, p ->
-                        viewModel.login(u, p) { success ->
-                            if (success) navController.popBackStack()
+                        authViewModel.login(u, p) { success ->
+                            if (success) {
+                                navController.popBackStack()
+                                dashboardViewModel.refreshDashboard()
+                            }
                         }
                     },
                     onRegister = { u, p ->
-                        viewModel.register(u, p) { success ->
-                            // After register, we could auto-login or just switch to login mode
-                            // For now let's just stay on the screen or show a success message
-                        }
+                        authViewModel.register(u, p) { success -> }
                     },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.DEBUG) {
+                DebugScreen(
+                    viewModel = databaseViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }

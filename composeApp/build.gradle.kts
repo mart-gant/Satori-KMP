@@ -39,6 +39,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
+            implementation("androidx.work:work-runtime-ktx:2.11.2")
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -62,6 +63,8 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.multiplatform.settings.test)
         }
     }
 }

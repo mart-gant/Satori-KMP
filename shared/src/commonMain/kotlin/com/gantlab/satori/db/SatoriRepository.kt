@@ -1,81 +1,162 @@
 package com.gantlab.satori.db
 
+import com.gantlab.satori.network.SatoriApiService
+import com.gantlab.satori.settings.SettingsManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 
-open class SatoriRepository(private val database: SatoriDatabase) {
+open class SatoriRepository(
+    private val database: SatoriDatabase,
+    private val api: SatoriApiService? = null,
+    private val settings: SettingsManager? = null
+) : ReactionRepository {
     
-    constructor(driverFactory: DriverFactory) : this(SatoriDatabase(driverFactory.createDriver()))
+    constructor(driverFactory: DriverFactory, api: SatoriApiService, settings: SettingsManager) : 
+        this(SatoriDatabase(driverFactory.createDriver()), api, settings)
 
     private val dbQueries = database.satoriDatabaseQueries
 
-    open fun insertReactionResult(reactionTimeMs: Long) {
-        dbQueries.insertResult(
-            timestamp = Clock.System.now().toEpochMilliseconds(),
-            reactionTimeMs = reactionTimeMs
-        )
+    override suspend fun insertReactionResult(reactionTimeMs: Long, synced: Boolean) {
+        val now = Clock.System.now().toEpochMilliseconds()
+        withContext(Dispatchers.Default) {
+            dbQueries.insertResult(
+                timestamp = now,
+                reactionTimeMs = reactionTimeMs,
+                synced = if (synced) 1L else 0L,
+                updatedAt = now
+            )
+        }
+        if (!synced) trySyncReaction(now, reactionTimeMs)
     }
 
-    open fun getAllResults(): List<ReactionResult> {
-        return dbQueries.selectAllResults().executeAsList()
+    private suspend fun trySyncReaction(timestamp: Long, timeMs: Long) {
+        val token = settings?.authToken ?: return
+        val apiService = api ?: return
+        try {
+            apiService.postReaction(token, timestamp, timeMs)
+            // Ideally we need the ID to mark it as synced. 
+            // For now, let's mark the latest one with this timestamp as synced.
+            withContext(Dispatchers.Default) {
+                val latest = dbQueries.selectAllResults().executeAsList().firstOrNull { it.timestamp == timestamp }
+                latest?.let { dbQueries.markResultAsSynced(it.id) }
+            }
+        } catch (e: Exception) {
+            // Keep as unsynced
+        }
+    }
+
+    override suspend fun getAllResults(): List<ReactionResult> = withContext(Dispatchers.Default) {
+        dbQueries.selectAllResults().executeAsList()
+    }
+
+    override suspend fun getUnsyncedResults(): List<ReactionResult> = withContext(Dispatchers.Default) {
+        dbQueries.selectUnsyncedResults().executeAsList()
+    }
+
+    override suspend fun markResultAsSynced(id: Long) = withContext(Dispatchers.Default) {
+        dbQueries.markResultAsSynced(id)
     }
 
     // --- Mood & Energy ---
 
-    open fun insertMood(moodScore: Long, energyScore: Long, note: String?) {
-        dbQueries.insertMood(
-            timestamp = Clock.System.now().toEpochMilliseconds(),
-            moodScore = moodScore,
-            energyScore = energyScore,
-            note = note
-        )
+    override suspend fun getUnsyncedMood(): List<MoodEntry> = withContext(Dispatchers.Default) {
+        dbQueries.selectUnsyncedMood().executeAsList()
+    }
+
+    override suspend fun markMoodAsSynced(id: Long) = withContext(Dispatchers.Default) {
+        dbQueries.markMoodAsSynced(id)
+    }
+
+    open suspend fun insertMood(moodScore: Long, energyScore: Long, note: String?, synced: Boolean = false) {
+        val now = Clock.System.now().toEpochMilliseconds()
+        withContext(Dispatchers.Default) {
+            dbQueries.insertMood(
+                timestamp = now,
+                moodScore = moodScore,
+                energyScore = energyScore,
+                note = note,
+                synced = if (synced) 1L else 0L,
+                updatedAt = now
+            )
+        }
+        if (!synced) trySyncMood(now, moodScore, energyScore, note ?: "")
+    }
+
+    private suspend fun trySyncMood(timestamp: Long, mood: Long, energy: Long, note: String) {
+        val token = settings?.authToken ?: return
+        val apiService = api ?: return
+        try {
+            apiService.postMood(token, mood, energy, note)
+            withContext(Dispatchers.Default) {
+                val latest = dbQueries.getMoodByTimestamp(timestamp).executeAsOneOrNull()
+                latest?.let { dbQueries.markMoodAsSynced(it.id) }
+            }
+        } catch (e: Exception) { }
     }
 
     open fun getMoodHistory(): List<MoodEntry> {
         return dbQueries.getMoodHistory().executeAsList()
     }
 
-    open fun insertMoodWithTimestamp(timestamp: Long, moodScore: Long, energyScore: Long, note: String?) {
-        dbQueries.insertMoodWithTimestamp(timestamp, moodScore, energyScore, note)
-    }
-
     open fun moodExists(timestamp: Long): Boolean {
         return dbQueries.getMoodByTimestamp(timestamp).executeAsOneOrNull() != null
     }
 
-    open fun updateMoodNote(id: Long, note: String?) {
-        dbQueries.updateMoodNote(note, id)
+    open suspend fun updateMoodNote(id: Long, note: String?) {
+        val now = Clock.System.now().toEpochMilliseconds()
+        withContext(Dispatchers.Default) {
+            dbQueries.updateMoodNote(note, now, id)
+        }
     }
 
-    open fun insertReactionWithTimestamp(timestamp: Long, reactionTimeMs: Long) {
-        dbQueries.insertResult(timestamp, reactionTimeMs)
+    open suspend fun insertMoodWithTimestamp(timestamp: Long, moodScore: Long, energyScore: Long, note: String?, synced: Boolean = false) {
+        val now = Clock.System.now().toEpochMilliseconds()
+        withContext(Dispatchers.Default) {
+            dbQueries.insertMood(timestamp, moodScore, energyScore, note, if (synced) 1L else 0L, now)
+        }
     }
 
-    open fun reactionExists(timestamp: Long): Boolean {
-        // Since SQLDelight queries are generated, I should check if I have a query for this.
-        // I'll assume I can use selectAllResults and filter for now if there is no specific query, 
-        // or I can add one to the .sq file. Let's check .sq file first.
-        return getAllResults().any { it.timestamp == timestamp }
+    override suspend fun insertReactionWithTimestamp(timestamp: Long, reactionTimeMs: Long, synced: Boolean) {
+        val now = Clock.System.now().toEpochMilliseconds()
+        dbQueries.insertResult(timestamp, reactionTimeMs, if (synced) 1L else 0L, now)
+    }
+
+    override suspend fun reactionExists(timestamp: Long): Boolean {
+        return dbQueries.selectAllResults().executeAsList().any { it.timestamp == timestamp }
     }
 
     // --- Mind Challenges ---
 
-    open fun insertChallengeResult(type: String, score: Long) {
+    override suspend fun getUnsyncedChallenges(): List<ChallengeResult> = withContext(Dispatchers.Default) {
+        dbQueries.selectUnsyncedChallenges().executeAsList()
+    }
+
+    override suspend fun markChallengeAsSynced(id: Long) = withContext(Dispatchers.Default) {
+        dbQueries.markChallengeAsSynced(id)
+    }
+
+    override suspend fun insertChallengeResult(type: String, score: Long, synced: Boolean) {
+        val now = Clock.System.now().toEpochMilliseconds()
         dbQueries.insertChallengeResult(
-            timestamp = Clock.System.now().toEpochMilliseconds(),
+            timestamp = now,
             challengeType = type,
-            score = score
+            score = score,
+            synced = if (synced) 1L else 0L,
+            updatedAt = now
         )
     }
 
-    open fun getChallengeHistory(type: String): List<ChallengeResult> {
+    override suspend fun getChallengeHistory(type: String): List<ChallengeResult> {
         return dbQueries.getChallengeHistory(type).executeAsList()
     }
 
-    open fun insertChallengeWithTimestamp(timestamp: Long, type: String, score: Long) {
-        dbQueries.insertChallengeResult(timestamp, type, score)
+    override suspend fun insertChallengeWithTimestamp(timestamp: Long, type: String, score: Long, synced: Boolean) {
+        val now = Clock.System.now().toEpochMilliseconds()
+        dbQueries.insertChallengeResult(timestamp, type, score, if (synced) 1L else 0L, now)
     }
 
-    open fun challengeExists(timestamp: Long, type: String): Boolean {
+    override suspend fun challengeExists(timestamp: Long, type: String): Boolean {
         return getChallengeHistory(type).any { it.timestamp == timestamp }
     }
 
@@ -132,12 +213,23 @@ open class SatoriRepository(private val database: SatoriDatabase) {
 
     // --- Self-Assessment ---
 
-    open fun insertSelfAssessment(attention: Long, memory: Long, executive: Long) {
+    override suspend fun getUnsyncedSelfAssessment(): List<SelfAssessmentResult> = withContext(Dispatchers.Default) {
+        dbQueries.selectUnsyncedSelfAssessment().executeAsList()
+    }
+
+    override suspend fun markSelfAssessmentAsSynced(id: Long) = withContext(Dispatchers.Default) {
+        dbQueries.markSelfAssessmentAsSynced(id)
+    }
+
+    open fun insertSelfAssessment(attention: Long, memory: Long, executive: Long, synced: Boolean = false) {
+        val now = Clock.System.now().toEpochMilliseconds()
         dbQueries.insertSelfAssessment(
-            timestamp = Clock.System.now().toEpochMilliseconds(),
+            timestamp = now,
             attentionScore = attention,
             memoryScore = memory,
-            executiveScore = executive
+            executiveScore = executive,
+            synced = if (synced) 1L else 0L,
+            updatedAt = now
         )
     }
 
@@ -145,17 +237,28 @@ open class SatoriRepository(private val database: SatoriDatabase) {
         return dbQueries.getSelfAssessmentHistory().executeAsList()
     }
 
-    open fun insertSelfAssessmentWithTimestamp(timestamp: Long, attention: Long, memory: Long, executive: Long) {
-        dbQueries.insertSelfAssessment(timestamp, attention, memory, executive)
+    open fun insertSelfAssessmentWithTimestamp(timestamp: Long, attention: Long, memory: Long, executive: Long, synced: Boolean = false) {
+        val now = Clock.System.now().toEpochMilliseconds()
+        dbQueries.insertSelfAssessment(timestamp, attention, memory, executive, if (synced) 1L else 0L, now)
     }
 
     open fun selfAssessmentExists(timestamp: Long): Boolean {
         return getSelfAssessmentHistory().any { it.timestamp == timestamp }
     }
 
+    // --- Cleanup ---
+
+    open fun clearAllData() {
+        dbQueries.deleteAllResults()
+        dbQueries.deleteAllMoods()
+        dbQueries.deleteAllChallenges()
+        dbQueries.deleteAllSelfAssessments()
+        dbQueries.deleteAllRoutines()
+    }
+
     // --- Data Export ---
 
-    open fun exportAllDataToCsv(): String {
+    open suspend fun exportAllDataToCsv(): String {
         val csv = StringBuilder()
         
         // Mood
@@ -194,9 +297,5 @@ open class SatoriRepository(private val database: SatoriDatabase) {
         }
 
         return csv.toString()
-    }
-
-    open fun exportMoodToCsv(): String {
-        return exportAllDataToCsv() // Defaulting to all data now
     }
 }

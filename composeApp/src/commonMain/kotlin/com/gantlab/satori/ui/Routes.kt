@@ -15,4 +15,5 @@ object Routes {
     const val COLOR_CLASH = "color_clash"
     const val MEMORY_GAME = "memory_game"
     const val AUTH = "auth"
+    const val DEBUG = "debug"
 }

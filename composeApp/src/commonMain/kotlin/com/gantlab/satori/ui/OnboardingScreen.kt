@@ -8,14 +8,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun OnboardingScreen(onComplete: (String) -> Unit) {
+fun OnboardingScreen(onComplete: (String, Boolean) -> Unit) {
     var nickname by remember { mutableStateOf("") }
+    var aiConsent by remember { mutableStateOf(value = false) }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
         Text("Witaj w Satori", style = MaterialTheme.typography.headlineLarge)
         Spacer(Modifier.height(16.dp))
@@ -38,8 +39,29 @@ fun OnboardingScreen(onComplete: (String) -> Unit) {
 
         Spacer(Modifier.height(32.dp))
 
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Analiza AI (Gemini)", style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        "Zezwól na anonimową analizę nastroju w celu generowania rekomendacji.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                Switch(checked = aiConsent, onCheckedChange = { aiConsent = it })
+            }
+        }
+
+        Spacer(Modifier.height(32.dp))
+
         Button(
-            onClick = { if (nickname.isNotBlank()) onComplete(nickname) },
+            onClick = { if (nickname.isNotBlank()) onComplete(nickname, aiConsent) },
             enabled = nickname.isNotBlank(),
             modifier = Modifier.fillMaxWidth().height(56.dp)
         ) {

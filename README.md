@@ -42,6 +42,14 @@
 * [/shared](./shared/src) - App Core: Database, AI Service, Repositories, Notifications.
 * [/server](./server/src/main/kotlin) - Ktor backend for data synchronization.
 
+## ⚖️ Legal & IP Ownership
+
+Satori follows a strict "Human-First" coding policy to ensure intellectual property clarity and user data protection.
+- **Copyright:** All core logic and architectural structures are human-authored.
+- **AI Usage:** Generative AI is used strictly as a productivity aid for boilerplate and UI layouts.
+- **Transparency:** See [LEGAL.md](./LEGAL.md) for our full AI Disclosure and IP statement.
+- **License:** Licensed under [Apache 2.0](./LICENSE).
+
 ---
 
 ## 🛠 Installation & Running

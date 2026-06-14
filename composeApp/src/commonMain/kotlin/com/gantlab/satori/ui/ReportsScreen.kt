@@ -20,9 +20,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.gantlab.satori.db.ReactionResult
-import com.gantlab.satori.db.MoodEntry
 import com.gantlab.satori.db.ChallengeResult
 import com.gantlab.satori.db.SelfAssessmentResult
+import com.gantlab.satori.domain.model.HourlyAnalysisPoint
+import com.gantlab.satori.domain.model.MoodHeatmapCell
+import com.gantlab.satori.domain.model.ReactionRank
+import com.gantlab.satori.domain.model.ReportsData
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.stringResource
 import satori.composeapp.generated.resources.*
@@ -31,10 +34,10 @@ import satori.composeapp.generated.resources.*
 @Composable
 fun ReportsScreen(
     results: List<ReactionResult>,
-    moodHistory: List<MoodEntry> = emptyList(),
-    taskCompletions: List<com.gantlab.satori.db.TaskCompletion> = emptyList(),
+    averageMs: Long? = null,
     challengeResults: Map<String, List<ChallengeResult>> = emptyMap(),
     selfAssessmentHistory: List<SelfAssessmentResult> = emptyList(),
+    reportsData: ReportsData? = null,
     aiInsight: String? = null,
     onGetAiInsight: () -> Unit = {},
     onBack: () -> Unit
@@ -86,7 +89,7 @@ fun ReportsScreen(
             item {
                 Text(stringResource(Res.string.mood_map_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
-                MoodHeatmap(moodHistory, taskCompletions)
+                MoodHeatmap(reportsData?.heatmapCells ?: emptyList())
                 Text(
                     stringResource(Res.string.mood_map_desc),
                     style = MaterialTheme.typography.bodySmall,
@@ -99,10 +102,10 @@ fun ReportsScreen(
                 Spacer(Modifier.height(8.dp))
 
                 if (results.size >= 2) {
-                    val avg = results.asSequence().map { it.reactionTimeMs }.average().toInt()
+                    val avgDisplay = averageMs ?: results.asSequence().map { it.reactionTimeMs }.average().toLong()
                     LineChart(
                         values = results.map { it.reactionTimeMs }.reversed().toList(),
-                        contentDescription = stringResource(Res.string.history_title) + " " + stringResource(Res.string.ms).replace("%d", avg.toString())
+                        contentDescription = stringResource(Res.string.history_title) + " " + stringResource(Res.string.ms).replace("%d", avgDisplay.toString())
                     )
                 } else {
                     Card(modifier = Modifier.fillMaxWidth().height(100.dp)) {
@@ -116,7 +119,7 @@ fun ReportsScreen(
             item {
                 Text(stringResource(Res.string.daily_performance_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
-                TimeOfDayAnalysis(results)
+                TimeOfDayAnalysis(reportsData?.hourlyAnalysis ?: emptyList())
             }
 
             // Challenge Results
@@ -154,40 +157,10 @@ fun ReportsScreen(
 }
 
 @Composable
-fun MoodHeatmap(history: List<MoodEntry>, completions: List<com.gantlab.satori.db.TaskCompletion> = emptyList()) {
+fun MoodHeatmap(cells: List<MoodHeatmapCell>) {
     val days = listOf("Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd")
     val times = listOf("Rano", "Dzień", "Wieczór")
     
-    val grid = Array(7) { arrayOfNulls<Long>(3) }
-    val routineGrid = Array(7) { BooleanArray(3) { false } }
-    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-    
-    history.forEach { entry ->
-        val entryDate = Instant.fromEpochMilliseconds(entry.timestamp).toLocalDateTime(TimeZone.currentSystemDefault())
-        if (entryDate.date > now.date.minus(7, DateTimeUnit.DAY)) {
-            val dayIdx = (entryDate.dayOfWeek.isoDayNumber - 1) % 7
-            val timeIdx = when (entryDate.hour) {
-                in 5..11 -> 0
-                in 12..18 -> 1
-                else -> 2
-            }
-            grid[dayIdx][timeIdx] = entry.moodScore
-        }
-    }
-
-    completions.forEach { completion ->
-        val cDate = Instant.fromEpochMilliseconds(completion.timestamp).toLocalDateTime(TimeZone.currentSystemDefault())
-        if (cDate.date > now.date.minus(7, DateTimeUnit.DAY)) {
-            val dayIdx = (cDate.dayOfWeek.isoDayNumber - 1) % 7
-            val timeIdx = when (cDate.hour) {
-                in 5..11 -> 0
-                in 12..18 -> 1
-                else -> 2
-            }
-            routineGrid[dayIdx][timeIdx] = true
-        }
-    }
-
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.padding(start = 50.dp)) {
             days.forEach { day ->
@@ -199,9 +172,8 @@ fun MoodHeatmap(history: List<MoodEntry>, completions: List<com.gantlab.satori.d
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(timeLabel, modifier = Modifier.width(50.dp), style = MaterialTheme.typography.labelSmall)
                 for (dIdx in 0..6) {
-                    val score = grid[dIdx][tIdx]
-                    val hasRoutine = routineGrid[dIdx][tIdx]
-                    val color = when (score) {
+                    val cell = cells.find { it.dayIndex == dIdx && it.timeIndex == tIdx }
+                    val color = when (cell?.moodScore) {
                         5L -> Color(0xFF1B5E20)
                         4L -> Color(0xFF4CAF50)
                         3L -> Color(0xFF81C784)
@@ -217,7 +189,7 @@ fun MoodHeatmap(history: List<MoodEntry>, completions: List<com.gantlab.satori.d
                             .background(color, shape = MaterialTheme.shapes.extraSmall),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (hasRoutine) {
+                        if (cell?.hasRoutineCompletion == true) {
                             Text("•", color = Color.White, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                         }
                     }
@@ -228,18 +200,10 @@ fun MoodHeatmap(history: List<MoodEntry>, completions: List<com.gantlab.satori.d
 }
 
 @Composable
-fun TimeOfDayAnalysis(results: List<ReactionResult>) {
-    val hourlyAvg = remember(results) {
-        results.groupBy { 
-            Instant.fromEpochMilliseconds(it.timestamp).toLocalDateTime(TimeZone.currentSystemDefault()).hour 
-        }.mapValues { entry -> 
-            entry.value.map { it.reactionTimeMs }.average().toLong() 
-        }
-    }
-
+fun TimeOfDayAnalysis(analysis: List<HourlyAnalysisPoint>) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
-            if (hourlyAvg.isEmpty()) {
+            if (analysis.isEmpty()) {
                 Text(stringResource(Res.string.no_hourly_data), style = MaterialTheme.typography.bodySmall)
             } else {
                 Text(stringResource(Res.string.avg_reaction_by_hour), style = MaterialTheme.typography.labelSmall)
@@ -250,17 +214,12 @@ fun TimeOfDayAnalysis(results: List<ReactionResult>) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    val maxVal = if (hourlyAvg.values.isNotEmpty()) hourlyAvg.values.maxOrNull()?.toFloat() ?: 1f else 1f
-                    
-                    (0..23).forEach { hour ->
-                        val avg = hourlyAvg[hour]
-                        val heightFactor = if (avg != null) (avg.toFloat() / maxVal).coerceIn(0.1f, 1f) else 0.05f
-                        val color = if (avg != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-                        
+                    analysis.forEach { point ->
+                        val color = if (point.averageMs != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .fillMaxHeight(heightFactor)
+                                .fillMaxHeight(point.heightFactor)
                                 .padding(horizontal = 1.dp)
                                 .background(color, MaterialTheme.shapes.extraSmall)
                         )
@@ -325,29 +284,28 @@ fun ResultItem(result: ReactionResult) {
             .toLocalDateTime(TimeZone.currentSystemDefault())
     }
     val dateString = "${dateTime.dayOfMonth}.${dateTime.monthNumber} ${dateTime.hour}:${dateTime.minute.toString().padStart(2, '0')}"
+    val rank = remember(result.reactionTimeMs) { ReactionRank.fromTime(result.reactionTimeMs) }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(text = stringResource(Res.string.result_ms_label).replace("%d", result.reactionTimeMs.toString()), style = MaterialTheme.typography.bodyLarge)
             Text(text = dateString, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
 
-        val qualityColor = when {
-            result.reactionTimeMs < 250 -> Color(0xFF4CAF50)
-            result.reactionTimeMs < 400 -> Color(0xFFFFC107)
-            else -> Color(0xFFF44336)
+        val qualityColor = when (rank) {
+            ReactionRank.NINJA, ReactionRank.GEPARD -> Color(0xFF4CAF50)
+            ReactionRank.SOKOL, ReactionRank.HUMAN -> Color(0xFFFFC107)
+            ReactionRank.LENIWIEC -> Color(0xFFF44336)
         }
 
         Surface(color = qualityColor, shape = MaterialTheme.shapes.small) {
             Box(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                 Text(
-                    text = if (result.reactionTimeMs < 250) stringResource(Res.string.fast)
-                           else if (result.reactionTimeMs < 400) stringResource(Res.string.good) 
-                           else stringResource(Res.string.slow),
+                    text = rank.label,
                     color = Color.White,
                     style = MaterialTheme.typography.labelSmall
                 )

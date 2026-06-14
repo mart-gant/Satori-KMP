@@ -1,15 +1,15 @@
 package com.gantlab.satori
 
 import androidx.compose.runtime.mutableStateListOf
-import com.gantlab.satori.db.DriverFactory
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.gantlab.satori.db.ReactionResult
-import com.gantlab.satori.db.createDatabase
+import com.gantlab.satori.db.SatoriRepository
 import com.gantlab.satori.utils.TimeUtils
+import kotlinx.coroutines.launch
 
-class DatabaseViewModel(driverFactory: DriverFactory) {
-    private val database = createDatabase(driverFactory)
-    private val queries = database.satoriDatabaseQueries
-
+class DatabaseViewModel(private val repository: SatoriRepository) : ViewModel() {
+    
     val results = mutableStateListOf<ReactionResult>()
 
     init {
@@ -17,15 +17,45 @@ class DatabaseViewModel(driverFactory: DriverFactory) {
     }
 
     fun refresh() {
-        results.clear()
-        results.addAll(queries.selectAllResults().executeAsList())
+        viewModelScope.launch {
+            results.clear()
+            results.addAll(repository.getAllResults())
+        }
     }
 
     fun addFakeResult() {
-        queries.insertResult(
-            timestamp = TimeUtils.nowMs(),
-            reactionTimeMs = (100..500).random().toLong()
-        )
+        viewModelScope.launch {
+            repository.insertReactionResult(
+                reactionTimeMs = (100..500).random().toLong(),
+                synced = false
+            )
+            refresh()
+        }
+    }
+
+    fun addFakeMood() {
+        viewModelScope.launch {
+            repository.insertMood(
+                moodScore = (1..5).random().toLong(),
+                energyScore = (1..5).random().toLong(),
+                note = "Automatyczny wpis testowy",
+                synced = false
+            )
+        }
+    }
+
+    fun addFakeChallengeResult(type: String) {
+        viewModelScope.launch {
+            repository.insertChallengeResult(
+                type = type,
+                score = (50..200).random().toLong(),
+                synced = false
+            )
+        }
+    }
+
+    fun clearAllData() {
+        repository.clearAllData()
         refresh()
     }
 }

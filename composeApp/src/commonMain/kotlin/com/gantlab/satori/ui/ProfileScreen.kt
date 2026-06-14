@@ -19,18 +19,21 @@ fun ProfileScreen(
     highContrast: Boolean,
     largeFont: Boolean,
     animationsEnabled: Boolean,
+    aiConsentGranted: Boolean,
     language: String,
     isLoggedIn: Boolean,
     onNicknameChange: (String) -> Unit,
     onHighContrastChange: (Boolean) -> Unit,
     onLargeFontChange: (Boolean) -> Unit,
     onAnimationsChange: (Boolean) -> Unit,
+    onAiConsentChange: (Boolean) -> Unit,
     onLanguageChange: (String) -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateToAuth: () -> Unit,
+    onNavigateToDebug: () -> Unit = {},
     onLogout: () -> Unit,
     onExportData: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -81,6 +84,22 @@ fun ProfileScreen(
                 Text(stringResource(Res.string.animations_enabled))
                 Spacer(Modifier.weight(1f))
                 Switch(checked = animationsEnabled, onCheckedChange = onAnimationsChange)
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Text("Prywatność i AI", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Zgoda na analizę AI")
+                    Text(
+                        "Pozwala na przesyłanie anonimowych danych do Gemini AI w celu generowania rekomendacji.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(checked = aiConsentGranted, onCheckedChange = onAiConsentChange)
             }
 
             Spacer(Modifier.height(16.dp))
@@ -150,6 +169,15 @@ fun ProfileScreen(
                 Icon(Icons.Default.Info, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(Res.string.about_app_btn))
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            TextButton(
+                onClick = onNavigateToDebug,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Panel Debuggera", color = MaterialTheme.colorScheme.outline)
             }
         }
     }

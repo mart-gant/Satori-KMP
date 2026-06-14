@@ -36,6 +36,7 @@ kotlin {
             implementation(libs.androidx.core.ktx)
             implementation(libs.androidx.appcompat)
             implementation(libs.ktor.client.okhttp)
+            implementation("androidx.work:work-runtime-ktx:2.9.0")
         }
         
         iosMain.dependencies {
@@ -49,6 +50,8 @@ kotlin {
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.multiplatform.settings.test)
         }
 
         val androidUnitTest by getting {
