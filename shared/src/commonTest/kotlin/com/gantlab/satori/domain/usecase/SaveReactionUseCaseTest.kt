@@ -1,8 +1,10 @@
 package com.gantlab.satori.domain.usecase
 
-import com.gantlab.satori.db.ChallengeResult
-import com.gantlab.satori.db.ReactionRepository
-import com.gantlab.satori.db.ReactionResult
+import com.gantlab.satori.Analytics
+import com.gantlab.satori.db.*
+import com.gantlab.satori.network.SatoriApiService
+import com.gantlab.satori.settings.SettingsManager
+import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,6 +25,16 @@ class FakeReactionRepository : ReactionRepository {
     override suspend fun challengeExists(timestamp: Long, type: String): Boolean = false
     override suspend fun getUnsyncedResults(): List<ReactionResult> = emptyList()
     override suspend fun markResultAsSynced(id: Long) {}
+    override suspend fun getUnsyncedMood(): List<MoodEntry> = emptyList()
+    override suspend fun markMoodAsSynced(id: Long) {}
+    override suspend fun getUnsyncedChallenges(): List<ChallengeResult> = emptyList()
+    override suspend fun markChallengeAsSynced(id: Long) {}
+    override suspend fun getUnsyncedSelfAssessment(): List<SelfAssessmentResult> = emptyList()
+    override suspend fun markSelfAssessmentAsSynced(id: Long) {}
+}
+
+class FakeAnalytics : Analytics {
+    override fun logEvent(name: String, params: Map<String, String>) {}
 }
 
 class SaveReactionUseCaseTest {
@@ -30,7 +42,10 @@ class SaveReactionUseCaseTest {
     @Test
     fun `should save reaction result to repository`() = runTest {
         val repository = FakeReactionRepository()
-        val useCase = SaveReactionUseCase(repository)
+        val settings = SettingsManager(MapSettings())
+        val analytics = FakeAnalytics()
+        
+        val useCase = SaveReactionUseCase(repository, settings, analytics)
 
         useCase(250L)
 

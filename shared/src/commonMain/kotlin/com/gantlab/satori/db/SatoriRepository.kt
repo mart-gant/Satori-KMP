@@ -266,7 +266,7 @@ open class SatoriRepository(
         csv.append("Timestamp,Date,Mood,Energy,Note\n")
         getMoodHistory().forEach {
             val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(it.timestamp)
-            csv.append("${it.timestamp},${instant},${it.moodScore},${it.energyScore},\"${it.note ?: ""}\"\n")
+            csv.append("${it.timestamp},$instant,${it.moodScore},${it.energyScore},\"${it.note ?: ""}\"\n")
         }
         
         // Reaction Results
@@ -274,7 +274,7 @@ open class SatoriRepository(
         csv.append("Timestamp,Date,ReactionTimeMs\n")
         getAllResults().forEach {
             val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(it.timestamp)
-            csv.append("${it.timestamp},${instant},${it.reactionTimeMs}\n")
+            csv.append("${it.timestamp},$instant,${it.reactionTimeMs}\n")
         }
         
         // Challenge Results
@@ -284,7 +284,7 @@ open class SatoriRepository(
         challenges.forEach { type ->
             getChallengeHistory(type).forEach {
                 val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(it.timestamp)
-                csv.append("${it.timestamp},${instant},${it.challengeType},${it.score}\n")
+                csv.append("${it.timestamp},$instant,${it.challengeType},${it.score}\n")
             }
         }
         
@@ -293,7 +293,7 @@ open class SatoriRepository(
         csv.append("Timestamp,Date,Attention,Memory,Executive\n")
         getSelfAssessmentHistory().forEach {
             val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(it.timestamp)
-            csv.append("${it.timestamp},${instant},${it.attentionScore},${it.memoryScore},${it.executiveScore}\n")
+            csv.append("${it.timestamp},$instant,${it.attentionScore},${it.memoryScore},${it.executiveScore}\n")
         }
 
         return csv.toString()
