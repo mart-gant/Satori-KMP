@@ -13,13 +13,15 @@ import satori.composeapp.generated.resources.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelfAssessmentScreen(
-    onSave: (attention: Long, memory: Long, executive: Long) -> Unit,
+    attention: Long,
+    memory: Long,
+    executive: Long,
+    onAttentionChange: (Long) -> Unit,
+    onMemoryChange: (Long) -> Unit,
+    onExecutiveChange: (Long) -> Unit,
+    onSave: () -> Unit,
     onBack: () -> Unit
 ) {
-    var attentionScore by remember { mutableStateOf(3f) }
-    var memoryScore by remember { mutableStateOf(3f) }
-    var executiveScore by remember { mutableStateOf(3f) }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -46,27 +48,27 @@ fun SelfAssessmentScreen(
 
             AssessmentSlider(
                 label = stringResource(Res.string.attention_concentration),
-                value = attentionScore,
-                onValueChange = { attentionScore = it }
+                value = attention.toFloat(),
+                onValueChange = { onAttentionChange(it.toLong()) }
             )
 
             AssessmentSlider(
                 label = stringResource(Res.string.working_memory),
-                value = memoryScore,
-                onValueChange = { memoryScore = it }
+                value = memory.toFloat(),
+                onValueChange = { onMemoryChange(it.toLong()) }
             )
 
             AssessmentSlider(
                 label = stringResource(Res.string.executive_functions_planning),
-                value = executiveScore,
-                onValueChange = { executiveScore = it }
+                value = executive.toFloat(),
+                onValueChange = { onExecutiveChange(it.toLong()) }
             )
 
             Spacer(Modifier.weight(1f))
 
             Button(
                 onClick = {
-                    onSave(attentionScore.toLong(), memoryScore.toLong(), executiveScore.toLong())
+                    onSave()
                     onBack()
                 },
                 modifier = Modifier.fillMaxWidth()

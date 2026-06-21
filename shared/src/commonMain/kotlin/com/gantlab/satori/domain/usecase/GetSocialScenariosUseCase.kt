@@ -1,12 +1,12 @@
 package com.gantlab.satori.domain.usecase
 
 import com.gantlab.satori.db.SatoriRepository
-import com.gantlab.satori.db.SocialScenario
+import com.gantlab.satori.domain.model.DomainSocialScenario
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class GetSocialScenariosUseCase(private val repository: SatoriRepository) {
-    suspend operator fun invoke(): List<SocialScenario> = withContext(Dispatchers.Default) {
+    suspend operator fun invoke(): List<DomainSocialScenario> = withContext(Dispatchers.Default) {
         val scenarios = repository.getAllScenarios()
         if (scenarios.isEmpty()) {
             seedInitialScenarios()
@@ -16,7 +16,7 @@ class GetSocialScenariosUseCase(private val repository: SatoriRepository) {
         }
     }
 
-    private fun seedInitialScenarios() {
+    private suspend fun seedInitialScenarios() {
         repository.insertScenario(
             "Wizyta u lekarza", 
             "Co zrobić po wejściu do przychodni.",

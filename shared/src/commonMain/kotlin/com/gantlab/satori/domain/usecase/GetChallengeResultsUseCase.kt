@@ -1,17 +1,13 @@
 package com.gantlab.satori.domain.usecase
 
-import com.gantlab.satori.db.ChallengeResult
-import com.gantlab.satori.db.SatoriRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.gantlab.satori.db.ChallengeRepository
+import com.gantlab.satori.domain.model.DomainChallengeResult
 
-class GetChallengeResultsUseCase(private val repository: SatoriRepository) {
-    suspend operator fun invoke(): Map<String, List<ChallengeResult>> = withContext(Dispatchers.Default) {
-        val colorClash = repository.getChallengeHistory("color_clash")
-        val memoryGame = repository.getChallengeHistory("memory_game")
-        mapOf(
-            "color_clash" to colorClash,
-            "memory_game" to memoryGame
-        )
+class GetChallengeResultsUseCase(private val repository: ChallengeRepository) {
+    suspend operator fun invoke(): Map<String, List<DomainChallengeResult>> {
+        val types = listOf("color_clash", "memory_game")
+        return types.associateWith { type ->
+            repository.getChallengeHistory(type)
+        }
     }
 }

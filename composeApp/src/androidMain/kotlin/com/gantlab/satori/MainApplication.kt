@@ -1,7 +1,7 @@
 package com.gantlab.satori
 
 import android.app.Application
-import com.gantlab.satori.db.DriverFactory
+import com.gantlab.satori.db.*
 import com.gantlab.satori.di.initKoin
 import com.gantlab.satori.notifications.AndroidNotificationManager
 import com.gantlab.satori.notifications.NotificationManager
@@ -19,8 +19,15 @@ class MainApplication : Application() {
             androidContext(this@MainApplication)
             workManagerFactory()
             modules(module {
-                single { DriverFactory(androidContext()) }
+                single<SatoriRepository> { 
+                    AndroidSatoriRepository(
+                        database = SatoriDatabase(DriverFactory(androidContext()).createDriver()),
+                        api = get(),
+                        settings = get()
+                    )
+                }
                 single<NotificationManager> { AndroidNotificationManager(androidContext()) }
+                single<String>(qualifier = org.koin.core.qualifier.named("baseUrl")) { "http://10.0.2.2:8080" }
                 worker { SyncWorker(get(), get(), get()) }
             })
         }

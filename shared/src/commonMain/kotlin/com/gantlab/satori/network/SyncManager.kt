@@ -32,16 +32,14 @@ class SyncManager(
     }
 
     private suspend fun syncMood(token: String) {
-        // 1. Wyślij to, co lokalne i niesynchronizowane
         val unsynced = repository.getUnsyncedMood()
         unsynced.forEach { entry ->
-            val response = apiService.postMood(token, entry.moodScore, entry.energyScore, entry.note)
+            val response = apiService.postMood(token, entry.moodScore.toLong(), entry.energyScore.toLong(), entry.note)
             if (response != null) {
                 repository.markMoodAsSynced(entry.id)
             }
         }
 
-        // 2. Pobierz historię z serwera i uzupełnij brakujące lokalnie
         val serverHistory = apiService.getMoodHistory(token)
         serverHistory.forEach { serverEntry ->
             if (!repository.moodExists(serverEntry.timestamp)) {
@@ -122,20 +120,17 @@ class SyncManager(
     private suspend fun syncRoutines(token: String) {
         val localRoutines = repository.getAllRoutines().map { routine ->
             val tasks = repository.getTasksForRoutine(routine.id).map { task ->
-                RoutineTaskSyncRequest(task.taskName, task.scheduledTime, task.isCompletedToday == 1L)
+                RoutineTaskSyncRequest(task.taskName, task.scheduledTime, task.isCompletedToday)
             }
-            RoutineSyncRequest(routine.id, routine.title, routine.icon, routine.isActive == 1L, tasks)
+            RoutineSyncRequest(routine.id, routine.title, routine.icon, routine.isActive, tasks)
         }
 
         val serverRoutines = apiService.syncRoutines(token, localRoutines)
 
         serverRoutines.forEach { serverRoutine ->
-            // Prosta logika: jeśli nie ma lokalnie rutyny o tym tytule, dodaj ją
-            // Wersja produkcyjna wymagałaby lepszego mapowania ID
             val exists = repository.getAllRoutines().any { it.title == serverRoutine.title }
             if (!exists) {
                 repository.createRoutine(serverRoutine.title, serverRoutine.icon)
-                // Tutaj należałoby jeszcze pobrać nowo utworzone ID i dodać zadania
             }
         }
     }

@@ -2,9 +2,7 @@ package com.gantlab.satori.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gantlab.satori.db.Routine
-import com.gantlab.satori.db.RoutineTask
-import com.gantlab.satori.db.TaskCompletion
+import com.gantlab.satori.domain.model.*
 import com.gantlab.satori.domain.usecase.GetRoutineDataUseCase
 import com.gantlab.satori.domain.usecase.UpdateRoutineTaskUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,9 +11,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class RoutineUiState(
-    val routines: List<Routine> = emptyList(),
-    val routineTasks: Map<Long, List<RoutineTask>> = emptyMap(),
-    val taskCompletions: List<TaskCompletion> = emptyList(),
+    val routines: List<DomainRoutine> = emptyList(),
+    val routineTasks: Map<Long, List<DomainRoutineTask>> = emptyMap(),
+    val taskCompletions: List<DomainTaskCompletion> = emptyList(),
     val isLoading: Boolean = false
 )
 

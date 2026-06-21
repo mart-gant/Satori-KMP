@@ -21,14 +21,28 @@ kotlin {
         browser()
     }
 
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+    }
+
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.sqldelight.runtime)
             implementation(libs.kotlinx.datetime)
             implementation(libs.multiplatform.settings)
             api(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serializationKotlinxJson)
+        }
+        
+        val wasmJsMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.js)
+            }
+        }
+
+        jsMain.dependencies {
+            implementation(libs.ktor.client.js)
         }
         
         androidMain.dependencies {
@@ -53,18 +67,6 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.multiplatform.settings.test)
         }
-
-        val androidUnitTest by getting {
-            dependencies {
-                implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
-            }
-        }
-
-        val jvmTest by getting {
-            dependencies {
-                implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
-            }
-        }
     }
 }
 
@@ -84,6 +86,9 @@ sqldelight {
     databases {
         create("SatoriDatabase") {
             packageName.set("com.gantlab.satori.db")
+            // Powoduje, że kod nie jest generowany dla commonMain, 
+            // a tylko dla konkretnych platform źródłowych
+            srcDirs.setFrom("src/androidMain/sqldelight")
         }
     }
 }

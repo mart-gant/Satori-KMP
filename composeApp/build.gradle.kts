@@ -33,20 +33,46 @@ kotlin {
         browser()
         binaries.executable()
     }
-    
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        moduleName = "composeApp"
+        browser {
+            val projectDirPath = project.projectDir.path
+            commonWebpackConfig {
+                devServer = (devServer ?: org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig.DevServer()).apply {
+                    static = (static ?: mutableListOf()).apply {
+                        add(projectDirPath)
+                    }
+                }
+            }
+        }
+        binaries.executable()
+    }
+
     sourceSets {
+        val wasmJsMain by getting {
+            dependencies {
+                implementation(libs.compose.runtime)
+                implementation(libs.compose.foundation)
+                implementation(libs.compose.material3)
+                implementation(libs.compose.ui)
+                implementation(libs.compose.components.resources)
+                implementation(devNpm("@cashapp/sqldelight-sqljs-worker", "2.3.2"))
+                implementation(devNpm("sql.js", "1.10.3"))
+            }
+        }
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.koin.workmanager)
             implementation("androidx.work:work-runtime-ktx:2.11.2")
-            
-            // Firebase
             implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
             implementation(libs.firebase.messaging)
         }
         commonMain.dependencies {
+            implementation(project(":shared"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -58,18 +84,9 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.compose.material.icons.extended)
             implementation(libs.multiplatform.settings)
-            
-            // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
-            
-            implementation(project(":shared"))
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.kotlinx.coroutines.test)
-            implementation(libs.multiplatform.settings.test)
         }
     }
 }
@@ -77,7 +94,6 @@ kotlin {
 android {
     namespace = "com.gantlab.satori"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
-
     defaultConfig {
         applicationId = "com.gantlab.satori"
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -88,16 +104,6 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
         }
     }
     compileOptions {

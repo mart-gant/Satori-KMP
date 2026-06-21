@@ -1,7 +1,6 @@
 package com.gantlab.satori.di
 
-import com.gantlab.satori.db.ReactionRepository
-import com.gantlab.satori.db.SatoriRepository
+import com.gantlab.satori.db.*
 import com.gantlab.satori.settings.SettingsManager
 import com.gantlab.satori.network.SatoriApiService
 import com.gantlab.satori.network.AiService
@@ -9,7 +8,6 @@ import com.gantlab.satori.network.GeminiAiService
 import com.gantlab.satori.getAnalytics
 import com.gantlab.satori.Analytics
 import com.gantlab.satori.DatabaseViewModel
-import com.gantlab.satori.db.DriverFactory
 import com.gantlab.satori.notifications.NotificationManager
 import com.gantlab.satori.notifications.DummyNotificationManager
 import com.gantlab.satori.domain.usecase.*
@@ -20,6 +18,7 @@ import org.koin.dsl.module
 import org.koin.core.module.Module
 import org.koin.core.KoinApplication
 import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.viewModelOf
 
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -43,21 +42,20 @@ val commonModule: Module = module {
         }
     }
 
-    single<String>(qualifier = org.koin.core.qualifier.named("baseUrl")) { "http://10.0.2.2:8080" }
-
     single<SettingsManager> { SettingsManager() }
     single<NotificationManager> { DummyNotificationManager() }
     single<SatoriApiService> { SatoriApiService(get(), get(org.koin.core.qualifier.named("baseUrl"))) }
     single<com.gantlab.satori.network.SyncManager> { com.gantlab.satori.network.SyncManager(get(), get(), get()) }
     single<AiService> { GeminiAiService(get(), get(org.koin.core.qualifier.named("baseUrl")), get()) }
-    single<SatoriRepository> { 
-        SatoriRepository(
-            database = com.gantlab.satori.db.SatoriDatabase(get<DriverFactory>().createDriver()),
-            api = get(),
-            settings = get()
-        )
-    }
+    
+    // Repositories (sub-types for Use Cases)
     single<ReactionRepository> { get<SatoriRepository>() }
+    single<MoodRepository> { get<SatoriRepository>() }
+    single<ChallengeRepository> { get<SatoriRepository>() }
+    single<RoutineRepository> { get<SatoriRepository>() }
+    single<AssessmentRepository> { get<SatoriRepository>() }
+    single<ScenarioRepository> { get<SatoriRepository>() }
+    
     single<Analytics> { getAnalytics() }
     
     // Use Cases
@@ -80,15 +78,15 @@ val commonModule: Module = module {
     factoryOf(::GetSocialScenariosUseCase)
     factoryOf(::GetOverstimulationTipsUseCase)
     
-    factoryOf(::ReactionViewModel)
-    factoryOf(::MoodViewModel)
-    factoryOf(::RoutineViewModel)
-    factoryOf(::AuthViewModel)
-    factoryOf(::SettingsViewModel)
-    factoryOf(::SocialViewModel)
-    factoryOf(::AssessmentViewModel)
-    factoryOf(::DashboardViewModel)
-    factoryOf(::DatabaseViewModel)
+    viewModelOf(::ReactionViewModel)
+    viewModelOf(::MoodViewModel)
+    viewModelOf(::RoutineViewModel)
+    viewModelOf(::AuthViewModel)
+    viewModelOf(::SettingsViewModel)
+    viewModelOf(::SocialViewModel)
+    viewModelOf(::AssessmentViewModel)
+    viewModelOf(::DashboardViewModel)
+    viewModelOf(::DatabaseViewModel)
 }
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication =
@@ -97,12 +95,15 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication =
         modules(commonModule)
     }
 
-fun initKoinIos(
-    factory: DriverFactory,
-    notifications: NotificationManager
+// iOS and other platforms will add their SatoriRepository implementation to the modules list
+fun initKoinPlatform(
+    repository: SatoriRepository,
+    notifications: NotificationManager,
+    baseUrl: String
 ): KoinApplication = initKoin {
     modules(module {
-        single<DriverFactory> { factory }
+        single<SatoriRepository> { repository }
         single<NotificationManager> { notifications }
+        single<String>(qualifier = org.koin.core.qualifier.named("baseUrl")) { baseUrl }
     })
 }

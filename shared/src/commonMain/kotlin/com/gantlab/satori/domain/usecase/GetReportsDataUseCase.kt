@@ -1,12 +1,7 @@
 package com.gantlab.satori.domain.usecase
 
-import com.gantlab.satori.db.MoodEntry
-import com.gantlab.satori.db.ReactionResult
 import com.gantlab.satori.db.SatoriRepository
-import com.gantlab.satori.db.TaskCompletion
-import com.gantlab.satori.domain.model.HourlyAnalysisPoint
-import com.gantlab.satori.domain.model.MoodHeatmapCell
-import com.gantlab.satori.domain.model.ReportsData
+import com.gantlab.satori.domain.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.*
@@ -30,8 +25,8 @@ class GetReportsDataUseCase(private val repository: SatoriRepository) {
     }
 
     private fun calculateHeatmap(
-        history: List<MoodEntry>, 
-        completions: List<TaskCompletion>,
+        history: List<DomainMoodEntry>, 
+        completions: List<DomainTaskCompletion>,
         now: LocalDateTime
     ): List<MoodHeatmapCell> {
         val cells = mutableListOf<MoodHeatmapCell>()
@@ -60,7 +55,7 @@ class GetReportsDataUseCase(private val repository: SatoriRepository) {
         return cells
     }
 
-    private fun calculateHourlyAnalysis(results: List<ReactionResult>): List<HourlyAnalysisPoint> {
+    private fun calculateHourlyAnalysis(results: List<DomainReactionResult>): List<HourlyAnalysisPoint> {
         val timeZone = TimeZone.currentSystemDefault()
         val hourlyAvg = results.groupBy { 
             Instant.fromEpochMilliseconds(it.timestamp).toLocalDateTime(timeZone).hour 

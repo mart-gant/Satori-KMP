@@ -2,10 +2,7 @@ package com.gantlab.satori.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gantlab.satori.db.ChallengeResult
-import com.gantlab.satori.db.ReactionResult
-import com.gantlab.satori.domain.model.ReactionRank
-import com.gantlab.satori.domain.model.ReportsData
+import com.gantlab.satori.domain.model.*
 import com.gantlab.satori.domain.usecase.GetChallengeResultsUseCase
 import com.gantlab.satori.domain.usecase.GetReactionResultsUseCase
 import com.gantlab.satori.domain.usecase.GetReportsDataUseCase
@@ -15,8 +12,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class ReactionUiState(
-    val results: List<ReactionResult> = emptyList(),
-    val challengeResults: Map<String, List<ChallengeResult>> = emptyMap(),
+    val results: List<DomainReactionResult> = emptyList(),
+    val challengeResults: Map<String, List<DomainChallengeResult>> = emptyMap(),
     val reportsData: ReportsData? = null,
     val isLoading: Boolean = false,
     val bestMs: Long? = null,

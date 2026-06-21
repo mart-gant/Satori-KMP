@@ -13,12 +13,13 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(
-    onLogin: (String, String) -> Unit,
-    onRegister: (String, String) -> Unit,
+    username: String,
+    onUsernameChange: (String) -> Unit,
+    onLogin: (String) -> Unit,
+    onRegister: (String) -> Unit,
     onBack: () -> Unit
 ) {
     var isLoginMode by remember { mutableStateOf(true) }
-    var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -57,7 +58,7 @@ fun AuthScreen(
 
             OutlinedTextField(
                 value = username,
-                onValueChange = { username = it },
+                onValueChange = onUsernameChange,
                 label = { Text("Użytkownik") },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -85,9 +86,9 @@ fun AuthScreen(
             Button(
                 onClick = {
                     if (isLoginMode) {
-                        onLogin(username, password)
+                        onLogin(password)
                     } else {
-                        onRegister(username, password)
+                        onRegister(password)
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp)

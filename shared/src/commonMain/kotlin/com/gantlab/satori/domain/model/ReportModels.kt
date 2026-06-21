@@ -3,7 +3,7 @@ package com.gantlab.satori.domain.model
 data class MoodHeatmapCell(
     val dayIndex: Int, // 0-6
     val timeIndex: Int, // 0-2 (Rano, Dzień, Wieczór)
-    val moodScore: Long?,
+    val moodScore: Int?,
     val hasRoutineCompletion: Boolean
 )
 

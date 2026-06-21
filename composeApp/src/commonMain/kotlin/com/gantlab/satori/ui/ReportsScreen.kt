@@ -19,13 +19,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import com.gantlab.satori.db.ReactionResult
-import com.gantlab.satori.db.ChallengeResult
-import com.gantlab.satori.db.SelfAssessmentResult
-import com.gantlab.satori.domain.model.HourlyAnalysisPoint
-import com.gantlab.satori.domain.model.MoodHeatmapCell
-import com.gantlab.satori.domain.model.ReactionRank
-import com.gantlab.satori.domain.model.ReportsData
+import com.gantlab.satori.domain.model.*
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.stringResource
 import satori.composeapp.generated.resources.*
@@ -33,10 +27,10 @@ import satori.composeapp.generated.resources.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportsScreen(
-    results: List<ReactionResult>,
+    results: List<DomainReactionResult>,
     averageMs: Long? = null,
-    challengeResults: Map<String, List<ChallengeResult>> = emptyMap(),
-    selfAssessmentHistory: List<SelfAssessmentResult> = emptyList(),
+    challengeResults: Map<String, List<DomainChallengeResult>> = emptyMap(),
+    selfAssessmentHistory: List<DomainSelfAssessmentResult> = emptyList(),
     reportsData: ReportsData? = null,
     aiInsight: String? = null,
     onGetAiInsight: () -> Unit = {},
@@ -174,11 +168,11 @@ fun MoodHeatmap(cells: List<MoodHeatmapCell>) {
                 for (dIdx in 0..6) {
                     val cell = cells.find { it.dayIndex == dIdx && it.timeIndex == tIdx }
                     val color = when (cell?.moodScore) {
-                        5L -> Color(0xFF1B5E20)
-                        4L -> Color(0xFF4CAF50)
-                        3L -> Color(0xFF81C784)
-                        2L -> Color(0xFFA5D6A7)
-                        1L -> Color(0xFFC8E6C9)
+                        5 -> Color(0xFF1B5E20)
+                        4 -> Color(0xFF4CAF50)
+                        3 -> Color(0xFF81C784)
+                        2 -> Color(0xFFA5D6A7)
+                        1 -> Color(0xFFC8E6C9)
                         else -> MaterialTheme.colorScheme.surfaceVariant
                     }
                     Box(
@@ -236,7 +230,7 @@ fun TimeOfDayAnalysis(analysis: List<HourlyAnalysisPoint>) {
 }
 
 @Composable
-fun SelfAssessmentTrends(history: List<SelfAssessmentResult>) {
+fun SelfAssessmentTrends(history: List<DomainSelfAssessmentResult>) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             TrendItem(stringResource(Res.string.attention), history.map { it.attentionScore }.reversed(), Color(0xFF2196F3))
@@ -256,7 +250,7 @@ fun TrendItem(label: String, values: List<Long>, color: Color) {
 }
 
 @Composable
-fun ChallengeCard(title: String, results: List<ChallengeResult>) {
+fun ChallengeCard(title: String, results: List<DomainChallengeResult>) {
     val progressDesc = stringResource(Res.string.game_progress_desc)
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -278,7 +272,7 @@ fun ChallengeCard(title: String, results: List<ChallengeResult>) {
 }
 
 @Composable
-fun ResultItem(result: ReactionResult) {
+fun ResultItem(result: DomainReactionResult) {
     val dateTime = remember(result.timestamp) {
         Instant.fromEpochMilliseconds(result.timestamp)
             .toLocalDateTime(TimeZone.currentSystemDefault())

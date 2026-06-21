@@ -54,148 +54,228 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top,
-        ) {
-            Spacer(Modifier.height(16.dp))
-        
-            Text(
-                text = stringResource(Res.string.app_name),
-                style = MaterialTheme.typography.displaySmall,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-            )
+        BoxWithConstraints(modifier = Modifier.padding(padding).fillMaxSize()) {
+            val isWideScreen = maxWidth > 800.dp
             
-            Text(
-                text = stringResource(Res.string.welcome_user).replace("%s", nickname),
-                style = MaterialTheme.typography.headlineSmall,
-            )
-
-            Spacer(Modifier.height(16.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = if (isWideScreen) 32.dp else 16.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
+            ) {
+                Spacer(Modifier.height(16.dp))
             
-            SatoriScoreCircle(dashState.dailySatoriScore)
+                Text(
+                    text = stringResource(Res.string.app_name),
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
+                
+                Text(
+                    text = stringResource(Res.string.welcome_user).replace("%s", nickname),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
 
-            if (moodState.moodStreak > 0) {
-                Spacer(Modifier.height(8.dp))
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = MaterialTheme.shapes.extraLarge,
-                ) {
+                Spacer(Modifier.height(24.dp))
+                
+                // GŁÓWNY PANEL (Score + Streak + Rank)
+                if (isWideScreen) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("🔥 ", style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            text = stringResource(Res.string.days_streak).replace("%d", moodState.moodStreak.toString()),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                SatoriScoreCircle(dashState.dailySatoriScore)
+                                if (moodState.moodStreak > 0) {
+                                    Spacer(Modifier.height(8.dp))
+                                    StreakBadge(moodState.moodStreak)
+                                }
+                            }
+                        }
+                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            RankCard(
+                                rank = reactionState.rank.label,
+                                bestResult = reactionState.bestMs,
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                StatCard(
+                                    label = stringResource(Res.string.best_result),
+                                    value = reactionState.bestMs?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
+                                    modifier = Modifier.weight(1f),
+                                )
+                                StatCard(
+                                    label = stringResource(Res.string.average_result),
+                                    value = reactionState.averageMs?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    SatoriScoreCircle(dashState.dailySatoriScore)
+                    if (moodState.moodStreak > 0) {
+                        Spacer(Modifier.height(8.dp))
+                        StreakBadge(moodState.moodStreak)
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    RankCard(
+                        rank = reactionState.rank.label,
+                        bestResult = reactionState.bestMs,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        StatCard(
+                            label = stringResource(Res.string.best_result),
+                            value = reactionState.bestMs?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
+                            modifier = Modifier.weight(1f),
+                        )
+                        StatCard(
+                            label = stringResource(Res.string.average_result),
+                            value = reactionState.averageMs?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
+                            modifier = Modifier.weight(1f),
                         )
                     }
                 }
-            }
 
-            Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(24.dp))
 
-            // REKOMENDACJE
-            if (dashState.recommendations.isNotEmpty()) {
-                Text(
-                    text = stringResource(Res.string.for_you),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.align(Alignment.Start),
-                )
-                Spacer(Modifier.height(8.dp))
-                dashState.recommendations.forEach { rec ->
-                    RecommendationCard(recommendation = rec)
+                // REKOMENDACJE I GRIDS
+                if (isWideScreen) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        // Lewa kolumna: Rekomendacje
+                        Column(modifier = Modifier.weight(1f)) {
+                            if (dashState.recommendations.isNotEmpty()) {
+                                Text(
+                                    text = stringResource(Res.string.for_you),
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                dashState.recommendations.forEach { rec ->
+                                    RecommendationCard(recommendation = rec)
+                                }
+                            } else {
+                                Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
+                                    Text("Brak nowych rekomendacji", style = MaterialTheme.typography.bodyMedium)
+                                }
+                            }
+                        }
+                        
+                        // Prawa kolumna: Grids
+                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                            HomeFeatureGrid(
+                                onNavigateToRoutines = onNavigateToRoutines,
+                                onNavigateToMood = onNavigateToMood,
+                                onNavigateToSelfAssessment = onNavigateToSelfAssessment,
+                                onNavigateToScenarios = onNavigateToScenarios,
+                            )
+                            HomeChallengesGrid(
+                                onNavigateToTest = onNavigateToTest,
+                                onNavigateToColorClash = onNavigateToColorClash,
+                                onNavigateToMemoryGame = onNavigateToMemoryGame,
+                            )
+                        }
+                    }
+                } else {
+                    // REKOMENDACJE
+                    if (dashState.recommendations.isNotEmpty()) {
+                        Text(
+                            text = stringResource(Res.string.for_you),
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.align(Alignment.Start),
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        dashState.recommendations.forEach { rec ->
+                            RecommendationCard(recommendation = rec)
+                        }
+                    }
+
+                    Spacer(Modifier.height(24.dp))
+
+                    HomeFeatureGrid(
+                        onNavigateToRoutines = onNavigateToRoutines,
+                        onNavigateToMood = onNavigateToMood,
+                        onNavigateToSelfAssessment = onNavigateToSelfAssessment,
+                        onNavigateToScenarios = onNavigateToScenarios,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    Spacer(Modifier.height(24.dp))
+
+                    HomeChallengesGrid(
+                        onNavigateToTest = onNavigateToTest,
+                        onNavigateToColorClash = onNavigateToColorClash,
+                        onNavigateToMemoryGame = onNavigateToMemoryGame,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
-            }
 
-            Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(24.dp))
 
-            // KARTA RANGI
-            RankCard(
-                rank = reactionState.rank.label,
-                bestResult = reactionState.bestMs,
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            // STATYSTYKI
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                StatCard(
-                    label = stringResource(Res.string.best_result),
-                    value = reactionState.bestMs?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
-                    modifier = Modifier.weight(1f),
-                )
-                StatCard(
-                    label = stringResource(Res.string.average_result),
-                    value = reactionState.averageMs?.let { stringResource(Res.string.ms).replace("%d", it.toString()) } ?: "--",
-                    modifier = Modifier.weight(1f),
-                )
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            // FEATURES GRID
-            HomeFeatureGrid(
-                onNavigateToRoutines = onNavigateToRoutines,
-                onNavigateToMood = onNavigateToMood,
-                onNavigateToSelfAssessment = onNavigateToSelfAssessment,
-                onNavigateToScenarios = onNavigateToScenarios,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            // MIND CHALLENGES
-            HomeChallengesGrid(
-                onNavigateToTest = onNavigateToTest,
-                onNavigateToColorClash = onNavigateToColorClash,
-                onNavigateToMemoryGame = onNavigateToMemoryGame,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            OutlinedButton(
-                onClick = onNavigateToTips,
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-            ) {
-                Text(text = stringResource(Res.string.sos_overstimulation))
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                TextButton(
-                    onClick = onNavigateToReports,
-                    modifier = Modifier.weight(1f),
+                OutlinedButton(
+                    onClick = onNavigateToTips,
+                    modifier = Modifier.fillMaxWidth(if (isWideScreen) 0.5f else 1f),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 ) {
-                    Text(text = stringResource(Res.string.reports))
+                    Text(text = stringResource(Res.string.sos_overstimulation))
                 }
-                TextButton(
-                    onClick = onNavigateToProfile,
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text(text = stringResource(Res.string.profile))
+
+                Spacer(Modifier.height(24.dp))
+
+                if (!isWideScreen) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        TextButton(
+                            onClick = onNavigateToReports,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(text = stringResource(Res.string.reports))
+                        }
+                        TextButton(
+                            onClick = onNavigateToProfile,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(text = stringResource(Res.string.profile))
+                        }
+                    }
                 }
+                
+                Spacer(Modifier.height(80.dp))
             }
-            
-            Spacer(Modifier.height(80.dp))
+        }
+    }
+}
+
+@Composable
+fun StreakBadge(days: Int) {
+    Surface(
+        color = MaterialTheme.colorScheme.primaryContainer,
+        shape = MaterialTheme.shapes.extraLarge,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("🔥 ", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = stringResource(Res.string.days_streak).replace("%d", days.toString()),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
         }
     }
 }
