@@ -38,7 +38,6 @@ fun App(initialRoute: String? = null) {
     val authState by authViewModel.uiState.collectAsState()
 
     val reactionViewModel: ReactionViewModel = koinViewModel()
-    val reactionState by reactionViewModel.uiState.collectAsState()
     
     val moodViewModel: MoodViewModel = koinViewModel()
     val routineViewModel: RoutineViewModel = koinViewModel()
@@ -61,8 +60,7 @@ fun App(initialRoute: String? = null) {
         highContrast = settingsState.highContrast,
         largeFont = settingsState.largeFont,
     ) {
-        val startDestination =
-            if (settingsState.isOnboardingCompleted) Routes.HOME else Routes.ONBOARDING
+        val startDestination = if (settingsState.isOnboardingCompleted) Routes.HOME else Routes.ONBOARDING
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
 
@@ -82,32 +80,23 @@ fun App(initialRoute: String? = null) {
                             selected = currentDestination?.hierarchy?.any { it.route == Routes.HOME } == true,
                             onClick = {
                                 navController.navigate(Routes.HOME) {
-                                    popUpTo(navController.graph.findStartDestination().route!!) {
-                                        saveState = true
-                                    }
+                                    popUpTo(navController.graph.findStartDestination().route!!) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
-                            }
+                            },
                         )
                         NavigationRailItem(
-                            icon = {
-                                Icon(
-                                    Icons.Default.Assessment,
-                                    contentDescription = "Reports"
-                                )
-                            },
+                            icon = { Icon(Icons.Default.Assessment, contentDescription = "Reports") },
                             label = { Text("Reports") },
                             selected = currentDestination?.hierarchy?.any { it.route == Routes.REPORTS } == true,
                             onClick = {
                                 navController.navigate(Routes.REPORTS) {
-                                    popUpTo(navController.graph.findStartDestination().route!!) {
-                                        saveState = true
-                                    }
+                                    popUpTo(navController.graph.findStartDestination().route!!) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
-                            }
+                            },
                         )
                         NavigationRailItem(
                             icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
@@ -115,27 +104,25 @@ fun App(initialRoute: String? = null) {
                             selected = currentDestination?.hierarchy?.any { it.route == Routes.PROFILE } == true,
                             onClick = {
                                 navController.navigate(Routes.PROFILE) {
-                                    popUpTo(navController.graph.findStartDestination().route!!) {
-                                        saveState = true
-                                    }
+                                    popUpTo(navController.graph.findStartDestination().route!!) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
-                            }
+                            },
                         )
                     }
                 }
 
                 Scaffold(
                     modifier = Modifier.weight(1f),
-                    snackbarHost = { SnackbarHost(snackbarHostState) }
+                    snackbarHost = { SnackbarHost(snackbarHostState) },
                 ) { padding ->
                     NavHost(
                         navController = navController,
                         startDestination = startDestination,
                         modifier = Modifier.padding(padding),
                         enterTransition = { if (settingsState.animationsEnabled) fadeIn(tween(300)) else EnterTransition.None },
-                        exitTransition = { if (settingsState.animationsEnabled) fadeOut(tween(300)) else ExitTransition.None }
+                        exitTransition = { if (settingsState.animationsEnabled) fadeOut(tween(300)) else ExitTransition.None },
                     ) {
                         composable(Routes.ONBOARDING) {
                             OnboardingScreen { nickname, aiConsent ->
@@ -158,7 +145,7 @@ fun App(initialRoute: String? = null) {
                                 onNavigateToScenarios = { navController.navigate(Routes.SCENARIOS) },
                                 onNavigateToSelfAssessment = { navController.navigate(Routes.SELF_ASSESSMENT) },
                                 onNavigateToColorClash = { navController.navigate(Routes.COLOR_CLASH) },
-                                onNavigateToMemoryGame = { navController.navigate(Routes.MEMORY_GAME) }
+                                onNavigateToMemoryGame = { navController.navigate(Routes.MEMORY_GAME) },
                             )
                         }
                         composable(Routes.REACTION_TEST) {
@@ -167,7 +154,7 @@ fun App(initialRoute: String? = null) {
                                     reactionViewModel.saveReactionTime(result)
                                     dashboardViewModel.refreshDashboard()
                                 },
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.COLOR_CLASH) {
@@ -175,7 +162,7 @@ fun App(initialRoute: String? = null) {
                                 onResult = { score ->
                                     reactionViewModel.saveChallengeResult("color_clash", score)
                                 },
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.MEMORY_GAME) {
@@ -183,7 +170,7 @@ fun App(initialRoute: String? = null) {
                                 onResult = { score ->
                                     reactionViewModel.saveChallengeResult("memory_game", score)
                                 },
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.SELF_ASSESSMENT) {
@@ -202,7 +189,7 @@ fun App(initialRoute: String? = null) {
                                     assessmentViewModel.saveSelfAssessment()
                                     dashboardViewModel.refreshDashboard()
                                 },
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.ROUTINES) {
@@ -218,7 +205,7 @@ fun App(initialRoute: String? = null) {
                                     dashboardViewModel.refreshDashboard()
                                 },
                                 onUpdateTaskName = routineViewModel::updateTaskDetails,
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.MOOD_LOG) {
@@ -230,20 +217,20 @@ fun App(initialRoute: String? = null) {
                                     dashboardViewModel.refreshDashboard()
                                 },
                                 onUpdateNote = moodViewModel::updateMoodNote,
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.TIPS) {
                             OverstimulationTipsScreen(
                                 tips = socialViewModel.getOverstimulationTips(),
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.SCENARIOS) {
                             val socialState by socialViewModel.uiState.collectAsState()
                             SocialScenariosScreen(
                                 scenarios = socialState.scenarios,
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.PROFILE) {
@@ -296,12 +283,13 @@ fun App(initialRoute: String? = null) {
                                         getPlatform().shareText(csvData)
                                     }
                                 },
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.REPORTS) {
                             val assessState by assessmentViewModel.uiState.collectAsState()
                             val dashState by dashboardViewModel.uiState.collectAsState()
+                            val reactionState by reactionViewModel.uiState.collectAsState()
                             ReportsScreen(
                                 results = reactionState.results,
                                 averageMs = reactionState.averageMs,
@@ -312,12 +300,12 @@ fun App(initialRoute: String? = null) {
                                 onGetAiInsight = {
                                     dashboardViewModel.getAiInsights()
                                 },
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.ABOUT) {
                             AboutScreen(
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.AUTH) {
@@ -354,13 +342,13 @@ fun App(initialRoute: String? = null) {
                                         }
                                     }
                                 },
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                         composable(Routes.DEBUG) {
                             DebugScreen(
                                 viewModel = databaseViewModel,
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
                             )
                         }
                     }

@@ -99,11 +99,13 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication =
 fun initKoinPlatform(
     repository: SatoriRepository,
     notifications: NotificationManager,
-    baseUrl: String
+    baseUrl: String,
 ): KoinApplication = initKoin {
-    modules(module {
-        single<SatoriRepository> { repository }
-        single<NotificationManager> { notifications }
-        single<String>(qualifier = org.koin.core.qualifier.named("baseUrl")) { baseUrl }
-    })
+    modules(
+        module {
+            single<SatoriRepository> { repository }
+            single<NotificationManager> { notifications }
+            single<String>(qualifier = org.koin.core.qualifier.named("baseUrl")) { baseUrl }
+        },
+    )
 }

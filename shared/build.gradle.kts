@@ -86,9 +86,6 @@ sqldelight {
     databases {
         create("SatoriDatabase") {
             packageName.set("com.gantlab.satori.db")
-            // Powoduje, że kod nie jest generowany dla commonMain, 
-            // a tylko dla konkretnych platform źródłowych
-            srcDirs.setFrom("src/androidMain/sqldelight")
         }
     }
 }

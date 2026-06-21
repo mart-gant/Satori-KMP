@@ -151,7 +151,7 @@ fun HomeScreen(
                 if (isWideScreen) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
                     ) {
                         // Lewa kolumna: Rekomendacje
                         Column(modifier = Modifier.weight(1f)) {
