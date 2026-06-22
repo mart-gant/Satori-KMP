@@ -53,6 +53,8 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.compose.material.icons.extended)
             implementation(libs.multiplatform.settings)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serializationKotlinxJson)
             
             // Koin
             implementation(libs.koin.core)
@@ -60,6 +62,10 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             
             implementation(project(":shared"))
+        }
+        jsMain {
+            kotlin.srcDir("src/webMain/kotlin")
+            resources.srcDir("src/webMain/resources")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

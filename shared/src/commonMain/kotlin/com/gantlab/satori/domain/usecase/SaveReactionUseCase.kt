@@ -15,7 +15,7 @@ class SaveReactionUseCase(
     private val analytics: Analytics,
     private val api: SatoriApiService? = null
 ) {
-    suspend operator fun invoke(reactionTimeMs: Long) = withContext(Dispatchers.IO) {
+    suspend operator fun invoke(reactionTimeMs: Long) = withContext(Dispatchers.Default) {
         val timestamp = Clock.System.now().toEpochMilliseconds()
         
         // 1. Persistence

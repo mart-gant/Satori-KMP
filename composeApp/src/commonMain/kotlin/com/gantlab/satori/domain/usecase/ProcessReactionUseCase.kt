@@ -7,7 +7,6 @@ import com.gantlab.satori.settings.SettingsManager
 import com.gantlab.satori.utils.TimeUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -17,7 +16,7 @@ class ProcessReactionUseCase(
     private val api: SatoriApiService,
     private val analytics: Analytics
 ) {
-    suspend operator fun invoke(timeMs: Long) = withContext(Dispatchers.IO) {
+    suspend operator fun invoke(timeMs: Long) = withContext(Dispatchers.Default) {
         val timestamp = TimeUtils.nowMs()
         
         // 1. Database - Single source of truth
@@ -35,7 +34,7 @@ class ProcessReactionUseCase(
     private fun trySync(timestamp: Long, timeMs: Long) {
         val token = settings.authToken ?: return
         // We don't want to block the user if sync is slow
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.Default).launch {
             try {
                 api.postReaction(token, timestamp, timeMs)
                 repository.markResultAsSynced(timestamp) // Assuming we add this by timestamp
