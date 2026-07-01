@@ -5,6 +5,10 @@ class JvmPlatform : Platform {
     override fun shareText(text: String) {
         println("Sharing on JVM: $text")
     }
+
+    override fun setLanguage(lang: String) {
+        println("Language change requested on JVM: $lang")
+    }
 }
 
 actual fun getPlatform(): Platform = JvmPlatform()

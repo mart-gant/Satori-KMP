@@ -1,6 +1,6 @@
 package com.gantlab.satori.db
 
-import app.cash.sqldelight.db.SqlDriver
+import kotlinx.datetime.Clock
 
 class DatabaseHelper(
     private val driverFactory: DriverFactory
@@ -19,6 +19,11 @@ class DatabaseHelper(
     }
 
     fun insertResult(timestamp: Long, reactionTimeMs: Long) {
-        getDatabase().satoriDatabaseQueries.insertResult(timestamp, reactionTimeMs)
+        getDatabase().satoriDatabaseQueries.insertResult(
+            timestamp = timestamp,
+            reactionTimeMs = reactionTimeMs,
+            synced = 0,
+            updatedAt = Clock.System.now().toEpochMilliseconds()
+        )
     }
 }
