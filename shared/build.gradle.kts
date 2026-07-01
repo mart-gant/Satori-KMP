@@ -9,13 +9,29 @@ plugins {
 kotlin {
     applyDefaultHierarchyTemplate()
 
-    androidTarget()
+    androidTarget {
+        @Suppress("DEPRECATION")
+        publishLibraryVariants("release", "debug")
+        
+        @Suppress("DEPRECATION")
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+    }
     
     iosArm64()
     iosSimulatorArm64()
     iosX64()
 
-    jvm()
+    jvm {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+    }
 
     js {
         browser()

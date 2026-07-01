@@ -49,18 +49,35 @@ CREATE TABLE SocialScenario (
     category TEXT NOT NULL
 );
 
+CREATE TABLE RoutineTaskHistory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    taskId INTEGER NOT NULL,
+    timestamp INTEGER NOT NULL,
+    FOREIGN KEY(taskId) REFERENCES RoutineTask(id) ON DELETE CASCADE
+);
+
+CREATE TABLE SelfAssessmentResult (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp INTEGER NOT NULL,
+    attentionScore INTEGER NOT NULL,
+    memoryScore INTEGER NOT NULL,
+    executiveScore INTEGER NOT NULL,
+    synced INTEGER NOT NULL DEFAULT 0,
+    updatedAt INTEGER NOT NULL DEFAULT 0
+);
+
 -- Queries for ReactionResult
 insertResult:
 INSERT INTO ReactionResult(timestamp, reactionTimeMs, synced, updatedAt)
 VALUES (?, ?, ?, ?);
 
 selectAllResults:
-SELECT *
+SELECT id, timestamp, reactionTimeMs, synced, updatedAt
 FROM ReactionResult
 ORDER BY timestamp DESC, id DESC;
 
 selectUnsyncedResults:
-SELECT * FROM ReactionResult WHERE synced = 0;
+SELECT id, timestamp, reactionTimeMs, synced, updatedAt FROM ReactionResult WHERE synced = 0;
 
 markResultAsSynced:
 UPDATE ReactionResult SET synced = 1 WHERE id = ?;
@@ -71,16 +88,16 @@ INSERT INTO MoodEntry(timestamp, moodScore, energyScore, note, synced, updatedAt
 VALUES (?, ?, ?, ?, ?, ?);
 
 getMoodHistory:
-SELECT * FROM MoodEntry ORDER BY timestamp DESC;
+SELECT id, timestamp, moodScore, energyScore, note, synced, updatedAt FROM MoodEntry ORDER BY timestamp DESC;
 
 selectUnsyncedMood:
-SELECT * FROM MoodEntry WHERE synced = 0;
+SELECT id, timestamp, moodScore, energyScore, note, synced, updatedAt FROM MoodEntry WHERE synced = 0;
 
 markMoodAsSynced:
 UPDATE MoodEntry SET synced = 1 WHERE id = ?;
 
 getMoodByTimestamp:
-SELECT * FROM MoodEntry WHERE timestamp = ?;
+SELECT id, timestamp, moodScore, energyScore, note, synced, updatedAt FROM MoodEntry WHERE timestamp = ?;
 
 updateMoodNote:
 UPDATE MoodEntry SET note = ?, updatedAt = ? WHERE id = ?;
@@ -91,10 +108,10 @@ INSERT INTO ChallengeResult(timestamp, challengeType, score, synced, updatedAt)
 VALUES (?, ?, ?, ?, ?);
 
 getChallengeHistory:
-SELECT * FROM ChallengeResult WHERE challengeType = ? ORDER BY timestamp DESC;
+SELECT id, timestamp, challengeType, score, synced, updatedAt FROM ChallengeResult WHERE challengeType = ? ORDER BY timestamp DESC;
 
 selectUnsyncedChallenges:
-SELECT * FROM ChallengeResult WHERE synced = 0;
+SELECT id, timestamp, challengeType, score, synced, updatedAt FROM ChallengeResult WHERE synced = 0;
 
 markChallengeAsSynced:
 UPDATE ChallengeResult SET synced = 1 WHERE id = ?;
@@ -105,7 +122,7 @@ INSERT INTO Routine(title, icon, isActive)
 VALUES (?, ?, ?);
 
 getAllRoutines:
-SELECT * FROM Routine;
+SELECT id, title, icon, isActive FROM Routine;
 
 updateRoutine:
 UPDATE Routine SET title = ?, icon = ?, isActive = ? WHERE id = ?;
@@ -115,7 +132,7 @@ INSERT INTO RoutineTask(routineId, taskName, scheduledTime)
 VALUES (?, ?, ?);
 
 getTasksForRoutine:
-SELECT * FROM RoutineTask WHERE routineId = ?;
+SELECT id, routineId, taskName, scheduledTime, isCompletedToday FROM RoutineTask WHERE routineId = ?;
 
 updateTaskCompletion:
 UPDATE RoutineTask SET isCompletedToday = ? WHERE id = ?;
@@ -128,47 +145,30 @@ DELETE FROM Routine WHERE id = ?;
 
 -- Queries for Social Scenarios
 getAllScenarios:
-SELECT * FROM SocialScenario;
+SELECT id, title, description, steps, category FROM SocialScenario;
 
 insertScenario:
 INSERT INTO SocialScenario(title, description, steps, category)
 VALUES (?, ?, ?, ?);
 
--- Task Completion History
-CREATE TABLE TaskCompletion (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    taskId INTEGER NOT NULL,
-    timestamp INTEGER NOT NULL,
-    FOREIGN KEY(taskId) REFERENCES RoutineTask(id) ON DELETE CASCADE
-);
-
+-- Task Completion
 insertTaskCompletion:
-INSERT INTO TaskCompletion(taskId, timestamp)
+INSERT INTO RoutineTaskHistory(taskId, timestamp)
 VALUES (?, ?);
 
 getCompletionsForPeriod:
-SELECT * FROM TaskCompletion WHERE timestamp >= ?;
+SELECT id, taskId, timestamp FROM RoutineTaskHistory WHERE timestamp >= ?;
 
 -- Self-Assessment
-CREATE TABLE SelfAssessmentResult (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    timestamp INTEGER NOT NULL,
-    attentionScore INTEGER NOT NULL,
-    memoryScore INTEGER NOT NULL,
-    executiveScore INTEGER NOT NULL,
-    synced INTEGER NOT NULL DEFAULT 0,
-    updatedAt INTEGER NOT NULL DEFAULT 0
-);
-
 insertSelfAssessment:
 INSERT INTO SelfAssessmentResult(timestamp, attentionScore, memoryScore, executiveScore, synced, updatedAt)
 VALUES (?, ?, ?, ?, ?, ?);
 
 getSelfAssessmentHistory:
-SELECT * FROM SelfAssessmentResult ORDER BY timestamp DESC;
+SELECT id, timestamp, attentionScore, memoryScore, executiveScore, synced, updatedAt FROM SelfAssessmentResult ORDER BY timestamp DESC;
 
 selectUnsyncedSelfAssessment:
-SELECT * FROM SelfAssessmentResult WHERE synced = 0;
+SELECT id, timestamp, attentionScore, memoryScore, executiveScore, synced, updatedAt FROM SelfAssessmentResult WHERE synced = 0;
 
 markSelfAssessmentAsSynced:
 UPDATE SelfAssessmentResult SET synced = 1 WHERE id = ?;

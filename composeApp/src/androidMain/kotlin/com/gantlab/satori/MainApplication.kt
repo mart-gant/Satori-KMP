@@ -20,7 +20,7 @@ class MainApplication : Application() {
             workManagerFactory()
             modules(module {
                 single<SatoriRepository> { 
-                    AndroidSatoriRepository(
+                    SatoriRepository(
                         database = SatoriDatabase(DriverFactory(androidContext()).createDriver()),
                         api = get(),
                         settings = get()

@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import app.cash.sqldelight.db.SqlDriver
+import kotlinx.coroutines.test.runTest
 
 // Note: Requires providing an in-memory driver in platform tests
 expect fun createTestDriver(): SqlDriver
@@ -11,7 +12,7 @@ expect fun createTestDriver(): SqlDriver
 class SatoriRepositoryTest {
 
     @Test
-    fun testInsertingAndRetrievingResults() {
+    fun testInsertingAndRetrievingResults() = runTest {
         val driver = createTestDriver()
         val database = SatoriDatabase(driver)
         val repository = SatoriRepository(database)
@@ -30,7 +31,7 @@ class SatoriRepositoryTest {
     }
 
     @Test
-    fun testMoodHistory() {
+    fun testMoodHistory() = runTest {
         val driver = createTestDriver()
         val database = SatoriDatabase(driver)
         val repository = SatoriRepository(database)
@@ -40,14 +41,14 @@ class SatoriRepositoryTest {
 
         val history = repository.getMoodHistory()
         assertEquals(2, history.size)
-        assertEquals(5, history[0].moodScore)
+        assertEquals(5, history[0].moodScore.toLong())
         assertEquals("Feeling good", history[0].note)
 
         driver.close()
     }
 
     @Test
-    fun testMindChallenges() {
+    fun testMindChallenges() = runTest {
         val driver = createTestDriver()
         val database = SatoriDatabase(driver)
         val repository = SatoriRepository(database)
@@ -68,7 +69,7 @@ class SatoriRepositoryTest {
     }
 
     @Test
-    fun testRoutinesAndTasks() {
+    fun testRoutinesAndTasks() = runTest {
         val driver = createTestDriver()
         val database = SatoriDatabase(driver)
         val repository = SatoriRepository(database)
@@ -78,8 +79,8 @@ class SatoriRepositoryTest {
         assertEquals(1, routines.size)
         val routineId = routines[0].id
 
-        repository.addTaskToRoutine(routineId, "Drink water", "08:00")
-        repository.addTaskToRoutine(routineId, "Meditation", "08:15")
+        repository.insertRoutineTask(routineId, "Drink water", "08:00")
+        repository.insertRoutineTask(routineId, "Meditation", "08:15")
 
         val tasks = repository.getTasksForRoutine(routineId)
         assertEquals(2, tasks.size)
@@ -87,7 +88,7 @@ class SatoriRepositoryTest {
 
         repository.updateTaskCompletion(tasks[0].id, true)
         val updatedTasks = repository.getTasksForRoutine(routineId)
-        assertEquals(1L, updatedTasks[0].isCompletedToday)
+        assertTrue(updatedTasks[0].isCompletedToday)
 
         driver.close()
     }

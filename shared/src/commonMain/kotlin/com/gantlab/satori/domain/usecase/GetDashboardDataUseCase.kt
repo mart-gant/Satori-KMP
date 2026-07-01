@@ -42,7 +42,7 @@ class GetDashboardDataUseCase(private val repository: SatoriRepository) {
         return moodPoints + routinePoints + activityPoints
     }
 
-    private fun generateRecommendations(): List<Recommendation> {
+    private suspend fun generateRecommendations(): List<Recommendation> {
         val latestMood = repository.getMoodHistory().firstOrNull()
         val latestAssessment = repository.getSelfAssessmentHistory().firstOrNull()
         

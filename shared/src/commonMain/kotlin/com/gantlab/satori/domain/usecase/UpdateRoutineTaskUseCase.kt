@@ -22,7 +22,7 @@ class UpdateRoutineTaskUseCase(
     }
 
     suspend fun addTask(routineId: Long, name: String, time: String?) = withContext(Dispatchers.Default) {
-        repository.addTaskToRoutine(routineId, name, time)
+        repository.insertRoutineTask(routineId, name, time)
         if (time != null) {
             val newTask = repository.getTasksForRoutine(routineId)
                 .firstOrNull { it.taskName == name && it.scheduledTime == time }
